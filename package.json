@@ -1,0 +1,28 @@
+{
+  "name": "psdk-lab",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "app/*",
+    "modules/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "npm run prepare:runtimes && npm run dev -w @psdk-lab/desktop",
+    "build": "npm run build -w @psdk-lab/desktop",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test -w @psdk-lab/core",
+    "test:integration": "npm run test:integration -w @psdk-lab/core",
+    "prepare:runtimes": "node runtimes/prepare.mjs",
+    "package": "npm run prepare:runtimes && npm run package -w @psdk-lab/desktop"
+  },
+  "devDependencies": {
+    "7zip-bin": "^5.2.0",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.14.0",
+    "typescript": "^6.0.3"
+  }
+}

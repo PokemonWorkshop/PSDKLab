@@ -42,3 +42,19 @@ We're looking for volunteers to help with:
 - **User testing, UX, and documentation:** Ensure the tool addresses the actual needs of testers.
 
 The project must remain **free, accessible, and maintainable by a volunteer team**.
+
+## Development
+
+Requirements: Node.js 20+. Nothing else: Git, the psdk-cli gem and the PSDK binaries (with their Ruby) are fetched by the tooling.
+
+    npm install
+    npm run dev                # prepares runtimes/ (first time only), then starts the app
+    npm test                   # unit tests, no network
+    npm run test:integration   # prepares a real MR, see below
+    npm run lint               # includes max-lines 200 per file
+
+Layout: `app/desktop` (Electron + React), `modules/core` (all the logic, no Electron), `modules/eslint-config` (shared rules), `runtimes/` (bundled tools).
+
+### Bundled tools
+
+`npm run prepare:runtimes` builds `runtimes/dist/` for the current OS (Windows or Linux): portable Git (dugite-native), the published `psdk-cli` and `thor` gems unpacked unchanged from rubygems.org, and 7za. Every URL, version and SHA-256 is pinned in `runtimes/versions.json`. There is no Ruby here: psdk-cli runs with the Ruby shipped in the PSDK binaries.

@@ -1,0 +1,15 @@
+appId: org.pokemonworkshop.psdk-lab
+productName: PSDK Lab
+directories:
+  output: release
+files:
+  - out/**
+# runtimes/dist holds Git and 7za for the OS that ran prepare:runtimes,
+# so each installer is built on its own platform.
+extraResources:
+  - from: ../../runtimes/dist
+    to: runtimes
+win:
+  target: nsis
+linux:
+  target: AppImage
