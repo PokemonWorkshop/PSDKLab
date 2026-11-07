@@ -32,6 +32,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const dist = join(here, 'dist');
 const cache = join(here, '.cache');
 const force = process.argv.includes('--force');
+const require = createRequire(import.meta.url);
 
 const versions = JSON.parse(readFileSync(join(here, 'versions.json'), 'utf8'));
 const target = versions[platformKey()];
