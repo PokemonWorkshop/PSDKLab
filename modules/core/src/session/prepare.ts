@@ -61,6 +61,98 @@ async function existingSession(
   return missingFiles(gameDir, binariesDir).length === 0 ? lock : null;
 }
 
+interface InstalledTools {
+  binariesVersion: string;
+  binariesDir: string;
+  ruby: ReturnType<typeof psdkRuby>;
+  tools: Awaited<ReturnType<typeof checkPsdkCli>>;
+}
+
+/** Latest PSDK binaries for this OS, plus the Ruby and psdk-cli they ship. */
+async function installTools(opts: PrepareOptions): Promise<InstalledTools> {
+  const { rt, data } = opts;
+  const binariesVersion = await latestBinariesVersion(opts.fetchFn);
+  const binariesDir = await installBinaries({
+    rt,
+    cacheDir: data.cacheDir,
+    version: binariesVersion,
+    onProgress: opts.onProgress,
+    fetchFn: opts.fetchFn,
+  });
+  const ruby = psdkRuby(binariesDir);
+  const tools = await checkPsdkCli(rt, ruby);
+  return { binariesVersion, binariesDir, ruby, tools };
+}
+
+/** Switches pokemonsdk to the MR with the published psdk-cli gem. */
+async function switchToMr(
+  rt: Runtimes,
+  ruby: InstalledTools['ruby'],
+  iid: number,
+  gameDir: string,
+  logs: string,
+): Promise<void> {
+  const prepareLog = join(logs, 'prepare.log');
+  const code = await runPsdkUseMr(rt, ruby, iid, {
+    cwd: gameDir,
+    onLog: (l) => void appendFile(prepareLog, l),
+  });
+  if (code !== 0)
+    throw new Error(
+      `psdk-use mr ${iid} failed (exit ${code}). See ${prepareLog}`,
+    );
+}
+
+/** Writes Game.rb then rebuilds the .rxdata files with `--util=restore`. */
+async function restoreGameData(
+  rt: Runtimes,
+  installed: InstalledTools,
+  gameDir: string,
+  logs: string,
+): Promise<void> {
+  await writeGameRb(gameDir);
+  const restoreLog = join(logs, 'restore.log');
+  const code = await runPsdk(
+    { rt, ruby: installed.ruby, binariesDir: installed.binariesDir, gameDir },
+    ['--util=restore'],
+    restoreLog,
+  );
+  if (code !== 0)
+    throw new Error(`--util=restore failed (exit ${code}). See ${restoreLog}`);
+}
+
+/** Throws if any required file is missing from the prepared game. */
+function verifySession(gameDir: string, binariesDir: string): void {
+  const missing = missingFiles(gameDir, binariesDir);
+  if (missing.length > 0)
+    throw new Error(`Session incomplete, missing:\n${missing.join('\n')}`);
+}
+
+/** Records the versions actually prepared. */
+async function buildLock(
+  rt: Runtimes,
+  mr: PrepareOptions['mr'],
+  demo: SessionLock['demo'],
+  installed: InstalledTools,
+  gameDir: string,
+): Promise<SessionLock> {
+  const psdkDir = join(gameDir, 'pokemonsdk');
+  return {
+    mr,
+    pokemonsdk: {
+      commit: await headCommit(rt, psdkDir),
+      version: psdkVersionString(
+        await readFile(join(psdkDir, 'version.txt'), 'utf8'),
+      ),
+    },
+    demo,
+    binariesVersion: installed.binariesVersion,
+    psdkCliVersion: installed.tools.psdkCli,
+    rubyVersion: installed.tools.ruby,
+    preparedAt: new Date().toISOString(),
+  };
+}
+
 /**
  * Prepares a playable, independent environment for an MR in one call, the way
  * Studio and the demo README do it: latest demo, latest PSDK binaries for this
@@ -84,65 +176,24 @@ export async function prepareSession(
     return { id, dir, gameDir, lock: kept };
   }
   await mkdir(logs, { recursive: true });
-  const prepareLog = join(logs, 'prepare.log');
 
   onStep?.('demo');
   const demo = await cloneDemo(rt, gameDir);
 
   onStep?.('binaries');
-  const binariesVersion = await latestBinariesVersion(opts.fetchFn);
-  const binariesDir = await installBinaries({
-    rt,
-    cacheDir: data.cacheDir,
-    version: binariesVersion,
-    onProgress: opts.onProgress,
-    fetchFn: opts.fetchFn,
-  });
-  const ruby = psdkRuby(binariesDir);
-  const tools = await checkPsdkCli(rt, ruby);
+  const installed = await installTools(opts);
 
   onStep?.('mr');
-  const code = await runPsdkUseMr(rt, ruby, mr.iid, {
-    cwd: gameDir,
-    onLog: (l) => void appendFile(prepareLog, l),
-  });
-  if (code !== 0)
-    throw new Error(
-      `psdk-use mr ${mr.iid} failed (exit ${code}). See ${prepareLog}`,
-    );
+  await switchToMr(rt, installed.ruby, mr.iid, gameDir, logs);
 
   onStep?.('restore');
-  await writeGameRb(gameDir);
-  const restoreLog = join(logs, 'restore.log');
-  const restoreCode = await runPsdk(
-    { rt, ruby, binariesDir, gameDir },
-    ['--util=restore'],
-    restoreLog,
-  );
-  if (restoreCode !== 0)
-    throw new Error(
-      `--util=restore failed (exit ${restoreCode}). See ${restoreLog}`,
-    );
+  await restoreGameData(rt, installed, gameDir, logs);
 
   onStep?.('verify');
-  const missing = missingFiles(gameDir, binariesDir);
-  if (missing.length > 0)
-    throw new Error(`Session incomplete, missing:\n${missing.join('\n')}`);
-  const lock: SessionLock = {
-    mr,
-    pokemonsdk: {
-      commit: await headCommit(rt, join(gameDir, 'pokemonsdk')),
-      version: psdkVersionString(
-        await readFile(join(gameDir, 'pokemonsdk', 'version.txt'), 'utf8'),
-      ),
-    },
-    demo,
-    binariesVersion,
-    psdkCliVersion: tools.psdkCli,
-    rubyVersion: tools.ruby,
-    preparedAt: new Date().toISOString(),
-  };
+  verifySession(gameDir, installed.binariesDir);
+  const lock = await buildLock(rt, mr, demo, installed, gameDir);
   await writeLock(dir, lock);
+
   onStep?.('ready');
   return { id, dir, gameDir, lock };
 }
