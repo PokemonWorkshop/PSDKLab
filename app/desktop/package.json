@@ -11,7 +11,8 @@
     "build": "electron-vite build",
     "package": "electron-vite build && electron-builder",
     "lint": "eslint src",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@psdk-lab/core": "*",
@@ -22,10 +23,17 @@
     "electron": "45.2.2",
     "electron-builder": "^26.18.0",
     "electron-vite": "^6.0.0",
-    "vite": "^8.3.5"
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
   },
   "dependencies": {
+    "@xstate/react": "^6.1.0",
+    "i18next": "^27.1.1",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "react-i18next": "^18.0.1",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "xstate": "^5.33.4"
   }
 }

@@ -1,6 +1,34 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { psdkRuby } from '../releases/ruby';
+
+/** First file of `dir` matching `pattern`, else `fallback` (reported as missing). */
+function findIn(dir: string, pattern: RegExp, fallback: string): string {
+  const name = existsSync(dir)
+    ? readdirSync(dir).find((f) => pattern.test(f))
+    : undefined;
+  return join(dir, name ?? fallback);
+}
+
+/**
+ * The Ruby DLL ruby.exe loads (Windows). Checked here because when it is
+ * missing Windows could load it from another Ruby found on PATH.
+ * TODO Linux: check ruby-dist/lib/libruby.so* once confirmed in Linux.7z.
+ */
+export function rubyLibraries(
+  binariesDir: string,
+  platform = process.platform,
+): string[] {
+  return platform === 'win32'
+    ? [
+        findIn(
+          binariesDir,
+          /^(x64-)?(msvcrt|ucrt)-ruby\d+\.dll$/,
+          'msvcrt-ruby300.dll',
+        ),
+      ]
+    : [];
+}
 
 /**
  * Files a session needs to be playable. "Ready" is only reported when all of
@@ -24,6 +52,7 @@ export function requiredFiles(
     join(gameDir, 'Data', 'System.rxdata'), // rebuilt by --util=restore
     join(gameDir, 'Data', 'MapInfos.rxdata'),
     psdkRuby(binariesDir, platform).bin, // PSDK binaries
+    ...rubyLibraries(binariesDir, platform),
     join(libDir, 'LiteRGSS.so'),
   ];
 }
