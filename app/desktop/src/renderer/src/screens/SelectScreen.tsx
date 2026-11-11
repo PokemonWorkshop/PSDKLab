@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SessionReport } from '../../../shared/ipc';
 import { EnvironmentBox, readySession } from '../components/EnvironmentBox';
+import { Markdown } from '../components/Markdown';
 import { instructions, isProposed, summary } from '../mr-text';
 import { StaleNotice, time, useMrList } from './mr-list';
 
@@ -53,9 +54,8 @@ function MrDetail(props: { mr: MergeRequest | null; onPrepare: () => void } & Se
   const { mr } = props;
   if (!mr) return <p className="muted detail-empty">{t('select.noSelection')}</p>;
   const how = instructions(mr.description);
-  const summed = summary(mr.description);
-  // Without an introduction the summary is the first step: not shown twice.
-  const about = how.steps[0]?.startsWith(summed.replace(/…$/, '')) ? '' : summed;
+  // The whole description is shown below when it has no "how to test" section.
+  const about = how.section ? summary(mr.description) : '';
   return (
     <>
       <div className="detail-body">
@@ -70,18 +70,8 @@ function MrDetail(props: { mr: MergeRequest | null; onPrepare: () => void } & Se
       <div className="detail-title">{mr.title}</div>
       {about && <div className="muted">{about}</div>}
       <div className="detail-section">{t('select.instructions')}</div>
-      {how.steps.length > 0 ? (
-        <ol className="instructions">
-          {how.steps.map((s, i) => (
-            <li key={i}>{s}</li>
-          ))}
-        </ol>
-      ) : how.text.length > 0 ? (
-        <div className="instructions-text">
-          {how.text.map((p, i) => (
-            <p key={i}>{p}</p>
-          ))}
-        </div>
+      {how.markdown ? (
+        <Markdown>{how.markdown}</Markdown>
       ) : (
         <p className="muted small">{t('select.noInstructions')}</p>
       )}
@@ -131,7 +121,7 @@ export function SelectScreen(props: {
       <div className="select-head">
         <div>
           <h1 className="page-title">{t('select.title')}</h1>
-          <div className="muted" style={{ fontSize: 15 }}>
+          <div className="muted" style={{ fontSize: 14 }}>
             {t('select.subtitle')}
           </div>
         </div>

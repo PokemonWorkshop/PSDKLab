@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SessionReport } from '../../../shared/ipc';
 import { GamePanel } from '../components/GamePanel';
+import { Markdown } from '../components/Markdown';
 import { RemoveSessions } from '../components/Sessions';
 import { osName } from '../components/Shell';
 import { instructions } from '../mr-text';
@@ -92,16 +93,7 @@ export function ReadyScreen(props: {
       <hr className="divider" />
       <details>
         <summary>{t('ready.details')}</summary>
-        {how.steps.length > 0 && (
-          <ol className="instructions">
-            {how.steps.map((s, i) => (
-              <li key={i}>{s}</li>
-            ))}
-          </ol>
-        )}
-        {how.text.map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
+        {how.markdown && <Markdown>{how.markdown}</Markdown>}
         <pre className="code-box">
           {`${t('ready.sessionDir')} : ${session.dir}\n` +
             t('ready.tools', {

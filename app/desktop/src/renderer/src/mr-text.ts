@@ -4,10 +4,12 @@ import { TEST_LABEL } from '@psdk-lab/core/constants';
 /** Proposed for testing: carries the label maintainers use for that. */
 export const isProposed = (mr: MergeRequest) => mr.labels.includes(TEST_LABEL);
 
-/** Markdown reduced to plain text: links, emphasis, code marks and HTML removed. */
+const COMMENTS = /<!--[\s\S]*?-->/g; // GitLab templates leave HTML comments
+
+/** Markdown reduced to plain text, for one-line summaries. */
 export function plain(md: string): string {
   return md
-    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(COMMENTS, '')
     .replace(/^\s*(```|~~~)[\s\S]*?^\s*\1[^\n]*$/gm, '') // fenced code blocks
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
@@ -16,51 +18,51 @@ export function plain(md: string): string {
     .trim();
 }
 
-const HEADING = /^\s{0,3}#{1,6}\s+(.*)$/;
+const HEADING = /^\s{0,3}(#{1,6})\s+(.*)$/;
 const ITEM = /^\s*(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?(.*)$/;
+const FENCE = /^\s*(```|~~~)/;
 // Section titles authors use for test steps (English and French).
 const TEST_SECTION = /test|how to|steps|reproduce|consigne|vérif|verif|tester/i;
 
-/** First sentence-like line of the description, for the MR card. */
-export function summary(description: string): string {
-  const line = plain(description)
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .find((l) => l && !HEADING.test(l) && !/^[-*+|>]|^\d+[.)]/.test(l));
-  // No introduction: the first instruction says what the MR is about.
-  const text = line ?? instructions(description).steps[0];
-  if (!text) return '';
-  return text.length > 160 ? `${text.slice(0, 157)}…` : text;
-}
-
 export interface Instructions {
-  steps: string[]; // list items, shown as a numbered list
-  text: string[]; // paragraphs, when the author wrote no list
+  markdown: string; // rendered with react-markdown
+  section: boolean; // true: a "how to test" section; false: the whole description
 }
 
 /**
- * The author's test instructions: the section whose title mentions testing
- * when there is one, else the whole description.
+ * The author's test instructions, as Markdown: the section whose title
+ * mentions testing (up to the next heading of the same level or above), else
+ * the whole description. Headings inside code blocks are ignored.
  */
 export function instructions(description: string): Instructions {
-  const lines = plain(description).split(/\r?\n/);
-  const start = lines.findIndex((l) => {
-    const h = HEADING.exec(l);
-    return h !== null && TEST_SECTION.test(h[1]);
-  });
-  let part = lines;
-  if (start >= 0) {
-    const rest = lines.slice(start + 1);
-    const end = rest.findIndex((l) => HEADING.test(l));
-    part = end >= 0 ? rest.slice(0, end) : rest;
+  const lines = description.replace(COMMENTS, '').split(/\r?\n/);
+  let inFence = false;
+  let start = -1;
+  let level = 0;
+  let end = lines.length;
+  for (let i = 0; i < lines.length; i++) {
+    if (FENCE.test(lines[i])) inFence = !inFence;
+    const h = inFence ? null : HEADING.exec(lines[i]);
+    if (!h) continue;
+    if (start < 0 && TEST_SECTION.test(h[2])) {
+      start = i;
+      level = h[1].length;
+    } else if (start >= 0 && h[1].length <= level) {
+      end = i;
+      break;
+    }
   }
-  const steps = part
-    .map((l) => ITEM.exec(l)?.[1]?.trim())
-    .filter((s): s is string => !!s);
-  if (steps.length > 0) return { steps: steps.slice(0, 12), text: [] };
-  const text = part
-    .map((l) => l.replace(HEADING, '$1').trim())
-    .filter((l) => l && !l.startsWith('|'))
-    .slice(0, 8);
-  return { steps: [], text };
+  if (start < 0) return { markdown: lines.join('\n').trim(), section: false };
+  return { markdown: lines.slice(start + 1, end).join('\n').trim(), section: true };
+}
+
+/** First sentence-like line of the description, for the MR card. */
+export function summary(description: string): string {
+  const lines = plain(description).split(/\r?\n/).map((l) => l.trim());
+  const line =
+    lines.find((l) => l && !HEADING.test(l) && !/^[-*+|>]|^\d+[.)]/.test(l)) ??
+    // No introduction: the first instruction says what the MR is about.
+    lines.map((l) => ITEM.exec(l)?.[1]?.trim()).find(Boolean);
+  if (!line) return '';
+  return line.length > 160 ? `${line.slice(0, 157)}…` : line;
 }

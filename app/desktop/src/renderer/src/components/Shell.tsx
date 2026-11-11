@@ -18,7 +18,7 @@ function Header() {
   const { t } = useTranslation();
   return (
     <header className="header">
-      <WorkshopIcon size={34} />
+      <WorkshopIcon size={28} />
       <div>
         <div className="brand-eyebrow">{t('app.eyebrow')}</div>
         <div className="brand-name">{t('app.name')}</div>

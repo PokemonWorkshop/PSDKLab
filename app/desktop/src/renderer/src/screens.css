@@ -6,14 +6,14 @@
   gap: 24px;
 }
 .page-title {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 600;
-  margin: 0 0 6px;
+  margin: 0 0 2px;
 }
 .select-meta {
   display: flex;
   justify-content: space-between;
-  margin: 26px 0 10px;
+  margin: 12px 0 8px;
   font-size: 12px;
 }
 .select-meta .repo {
@@ -381,4 +381,91 @@
 }
 .old-sessions .remove {
   margin-top: 4px;
+}
+
+/* Author's instructions (react-markdown), kept compact in the side panel */
+.md {
+  font-size: 14px;
+  line-height: 1.55;
+}
+.md > :first-child {
+  margin-top: 0;
+}
+.md p,
+.md ul,
+.md ol,
+.md pre,
+.md table,
+.md blockquote {
+  margin: 0 0 10px;
+}
+.md ul,
+.md ol {
+  padding-left: 22px;
+}
+.md li {
+  margin-bottom: 4px;
+}
+.md li > p {
+  margin: 0;
+}
+.md h1,
+.md h2,
+.md h3,
+.md h4,
+.md h5,
+.md h6 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 14px 0 6px;
+}
+.md code {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+.md pre {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 10px 12px;
+  overflow: auto;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+.md pre code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+.md blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 12px;
+  color: var(--text-muted);
+}
+.md table {
+  border-collapse: collapse;
+  display: block;
+  overflow: auto;
+}
+.md th,
+.md td {
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  text-align: left;
+}
+.md hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 12px 0;
+}
+.md input[type='checkbox'] {
+  margin: 0 6px 0 0;
+  accent-color: var(--accent);
+  vertical-align: middle;
+}
+.md li:has(> input[type='checkbox']) {
+  list-style: none;
+  margin-left: -18px;
 }

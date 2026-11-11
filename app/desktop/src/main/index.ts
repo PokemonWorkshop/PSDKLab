@@ -29,6 +29,12 @@ function createWindow(): void {
     if (url.startsWith('https://')) void shell.openExternal(url);
     return { action: 'deny' };
   });
+  // MR descriptions are written by anyone: the page itself never leaves the app.
+  win.webContents.on('will-navigate', (event, url) => {
+    if (url === win.webContents.getURL()) return; // reload
+    event.preventDefault();
+    if (url.startsWith('https://')) void shell.openExternal(url);
+  });
   const devUrl = process.env['ELECTRON_RENDERER_URL'];
   if (devUrl) void win.loadURL(devUrl);
   else void win.loadFile(join(__dirname, '../renderer/index.html'));
