@@ -10,12 +10,13 @@ export interface SessionLock {
   psdkCliVersion: string; // the published gem that switched pokemonsdk to the MR
   rubyVersion: string; // Ruby shipped in the PSDK binaries
   preparedAt: string;
+  /** Game data: cache key, and whether it was copied from the cache instead of rebuilt. */
+  gameData?: Record<'restore' | 'data', { key: string; reused: boolean }>;
 }
 
-/** ex. mr-101-7a4d9c2 */
-export function sessionId(mrIid: number, sha: string): string {
-  return `mr-${mrIid}-${sha.slice(0, 7)}`;
-}
+import { sessionId } from '../constants';
+
+export { sessionId };
 
 /** <userData>/sessions/<id>/ */
 export function sessionDir(

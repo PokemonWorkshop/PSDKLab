@@ -2,8 +2,10 @@ appId: org.pokemonworkshop.psdk-lab
 productName: PSDK Lab
 directories:
   output: release
+  buildResources: resources
 files:
   - out/**
+  - resources/icon.png
 # runtimes/dist holds Git and 7za for the OS that ran prepare:runtimes,
 # so each installer is built on its own platform.
 extraResources:
@@ -11,5 +13,7 @@ extraResources:
     to: runtimes
 win:
   target: nsis
+  icon: resources/icon-256.png # electron-builder needs at least 256x256
 linux:
   target: AppImage
+  icon: resources/icon-256.png

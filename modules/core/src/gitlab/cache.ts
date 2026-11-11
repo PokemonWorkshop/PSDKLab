@@ -6,8 +6,13 @@ export interface MrList {
   mrs: MergeRequest[];
   fetchedAt: string | null; // ISO date of the GitLab answer shown
   stale: boolean; // true when GitLab could not be asked and an older list is shown
-  notice?: string; // why the list is stale, in plain words
+  notice?: string; // why the list is stale, in plain words (logs)
+  staleReason?: StaleReason; // the same, for the interface to translate
 }
+
+export type StaleReason =
+  | { kind: 'rate-limit'; retryInSec: number }
+  | { kind: 'unreachable'; detail: string };
 
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
 const DEFAULT_BACKOFF_SEC = 60;
@@ -41,8 +46,14 @@ export class MrCache {
       ? this.now() - Date.parse(this.list.fetchedAt)
       : Infinity;
     if (this.list && !force && age < this.ttlMs)
-      return { ...this.list, stale: false, notice: undefined };
-    if (this.now() < this.blockedUntil) return this.fallback(this.waitNotice());
+      return {
+        ...this.list,
+        stale: false,
+        notice: undefined,
+        staleReason: undefined,
+      };
+    if (this.now() < this.blockedUntil)
+      return this.fallback(this.waitNotice(), this.waitReason());
     try {
       const mrs = await listMergeRequests(undefined, this.fetchFn);
       this.list = {
@@ -56,23 +67,36 @@ export class MrCache {
       if (err instanceof GitlabError && err.status === 429) {
         this.blockedUntil =
           this.now() + (err.retryAfterSec ?? DEFAULT_BACKOFF_SEC) * 1000;
-        return this.fallback(this.waitNotice());
+        return this.fallback(this.waitNotice(), this.waitReason());
       }
+      const detail = (err as Error).message;
       return this.fallback(
-        `GitLab unreachable (${(err as Error).message}).`,
+        `GitLab unreachable (${detail}).`,
+        { kind: 'unreachable', detail },
         err,
       );
     }
   }
 
+  private waitSec(): number {
+    return Math.max(1, Math.ceil((this.blockedUntil - this.now()) / 1000));
+  }
+
+  private waitReason(): StaleReason {
+    return { kind: 'rate-limit', retryInSec: this.waitSec() };
+  }
+
   private waitNotice(): string {
-    const sec = Math.max(1, Math.ceil((this.blockedUntil - this.now()) / 1000));
-    return `GitLab rate limits anonymous requests: retry possible in ${sec} s.`;
+    return `GitLab rate limits anonymous requests: retry possible in ${this.waitSec()} s.`;
   }
 
   /** Last known list with a notice; without one, the error is surfaced. */
-  private fallback(notice: string, cause?: unknown): MrList {
-    if (this.list) return { ...this.list, stale: true, notice };
+  private fallback(
+    notice: string,
+    staleReason: StaleReason,
+    cause?: unknown,
+  ): MrList {
+    if (this.list) return { ...this.list, stale: true, notice, staleReason };
     throw cause instanceof Error && !(cause instanceof GitlabError)
       ? cause
       : new Error(notice);
@@ -80,7 +104,9 @@ export class MrCache {
 
   private async readDisk(): Promise<MrList | null> {
     try {
-      return JSON.parse(await readFile(this.file, 'utf8')) as MrList;
+      const list = JSON.parse(await readFile(this.file, 'utf8')) as MrList;
+      // Lists saved before labels and descriptions were kept are asked again.
+      return list.mrs.every((mr) => Array.isArray(mr.labels)) ? list : null;
     } catch {
       return null;
     }

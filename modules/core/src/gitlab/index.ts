@@ -6,6 +6,8 @@ export interface MergeRequest {
   sha: string;
   webUrl: string;
   updatedAt: string;
+  labels: string[];
+  description: string; // Markdown written by the author (test instructions…)
 }
 
 interface GitlabMr {
@@ -16,10 +18,32 @@ interface GitlabMr {
   sha: string;
   web_url: string;
   updated_at: string;
+  labels?: string[];
+  description?: string | null;
+  draft?: boolean;
+  work_in_progress?: boolean; // older name of draft
 }
 
 const API = 'https://gitlab.com/api/v4';
-export const PSDK_PROJECT = 'pokemonsdk/pokemonsdk';
+import { PSDK_PROJECT } from '../constants';
+export { PSDK_PROJECT, TEST_LABEL } from '../constants';
+
+/** Open MRs without the Draft ones (not ready to be tested). */
+export function toMergeRequests(raw: GitlabMr[]): MergeRequest[] {
+  return raw
+    .filter((mr) => !(mr.draft ?? mr.work_in_progress ?? false))
+    .map((mr) => ({
+      iid: mr.iid,
+      title: mr.title,
+      author: mr.author.username,
+      sourceBranch: mr.source_branch,
+      sha: mr.sha,
+      webUrl: mr.web_url,
+      updatedAt: mr.updated_at,
+      labels: mr.labels ?? [],
+      description: mr.description ?? '',
+    }));
+}
 
 /** HTTP error from the GitLab API; `retryAfterSec` is set on 429 (rate limit). */
 export class GitlabError extends Error {
@@ -52,14 +76,5 @@ export async function listMergeRequests(
       res.status,
       res.status === 429 ? retryAfter(res.headers) : null,
     );
-  const raw = (await res.json()) as GitlabMr[];
-  return raw.map((mr) => ({
-    iid: mr.iid,
-    title: mr.title,
-    author: mr.author.username,
-    sourceBranch: mr.source_branch,
-    sha: mr.sha,
-    webUrl: mr.web_url,
-    updatedAt: mr.updated_at,
-  }));
+  return toMergeRequests((await res.json()) as GitlabMr[]);
 }

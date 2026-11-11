@@ -1,48 +1,71 @@
-import type { MrList } from '@psdk-lab/core';
-import { useCallback, useEffect, useState } from 'react';
-import { MrItem } from './MrItem';
-import { RuntimeStatus } from './RuntimeStatus';
+import { useMachine } from '@xstate/react';
+import { useCallback, useEffect } from 'react';
+import type { MergeRequest } from '@psdk-lab/core';
+import { useSessions } from './components/Sessions';
+import { Shell, Stepper } from './components/Shell';
+import { stepNumber, workflowMachine } from './machines/workflow';
+import { FailedScreen } from './screens/FailedScreen';
+import { PrepareScreen } from './screens/PrepareScreen';
+import { ReadyScreen } from './screens/ReadyScreen';
+import { SelectScreen } from './screens/SelectScreen';
 
-const time = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleTimeString() : '—';
-
+/** Choose an MR → prepare its session → launch and test, as on the mock-ups. */
 export function App() {
-  const [list, setList] = useState<MrList | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [snapshot, send] = useMachine(workflowMachine);
+  const { mr, steps, startedAt, failedStep, session, error } = snapshot.context;
+  const state = snapshot.value;
+  const { sessions, refresh } = useSessions();
 
-  const load = useCallback((force = false) => {
-    setLoading(true);
-    window.api
-      .listMrs(force)
-      .then((l) => {
-        setList(l);
-        setError(null);
-      })
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+  // Back on the list (after preparing, removing…): read the sessions again.
+  useEffect(() => {
+    if (state === 'selecting') refresh();
+  }, [state, refresh]);
 
-  useEffect(() => load(), [load]);
+  useEffect(
+    () =>
+      window.api.onSessionStep(
+        (e) =>
+          e.mrIid === mr?.iid && send({ type: 'UPDATE', update: e.update }),
+      ),
+    [mr?.iid, send],
+  );
+  const select = useCallback(
+    (m: MergeRequest) => send({ type: 'SELECT', mr: m }),
+    [send],
+  );
 
   return (
-    <main style={{ fontFamily: 'sans-serif', padding: 24 }}>
-      <h1>PSDK Lab</h1>
-      <RuntimeStatus />
-      <h2>Open merge requests</h2>
-      <p>
-        <button type="button" onClick={() => load(true)} disabled={loading}>
-          {loading ? 'Loading…' : 'Refresh'}
-        </button>{' '}
-        {list && <small>List from {time(list.fetchedAt)}</small>}
-      </p>
-      {list?.notice && <p>{list.notice}</p>}
-      {error && <p>Error: {error}</p>}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {list?.mrs.map((mr) => (
-          <MrItem key={mr.iid} mr={mr} />
-        ))}
-      </ul>
-    </main>
+    <Shell>
+      <Stepper current={stepNumber(state)} />
+      {state === 'selecting' && (
+        <SelectScreen
+          selected={mr}
+          onSelect={select}
+          onPrepare={() => send({ type: 'PREPARE' })}
+          sessions={sessions}
+          onOpen={(s) => send({ type: 'OPEN', session: s })}
+          onSessionsChanged={refresh}
+        />
+      )}
+      {state === 'preparing' && mr && (
+        <PrepareScreen mr={mr} steps={steps} startedAt={startedAt} />
+      )}
+      {state === 'failed' && mr && (
+        <FailedScreen
+          mr={mr}
+          step={failedStep}
+          error={error}
+          onRetry={() => send({ type: 'PREPARE' })}
+          onBack={() => send({ type: 'BACK' })}
+        />
+      )}
+      {state === 'ready' && mr && session && (
+        <ReadyScreen
+          mr={mr}
+          session={session}
+          onBack={() => send({ type: 'BACK' })}
+        />
+      )}
+    </Shell>
   );
 }

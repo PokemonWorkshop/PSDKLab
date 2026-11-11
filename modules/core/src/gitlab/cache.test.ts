@@ -2,7 +2,9 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { writeFileSync } from 'node:fs';
 import { MrCache } from './cache';
+import { toMergeRequests } from './index';
 
 const mr = {
   iid: 1,
@@ -48,6 +50,7 @@ describe('MrCache', () => {
     const second = await cache.get();
     expect(second.stale).toBe(true);
     expect(second.notice).toContain('30 s');
+    expect(second.staleReason).toEqual({ kind: 'rate-limit', retryInSec: 30 });
     now = 10_000;
     await cache.get();
     expect(f.calls()).toBe(2); // still blocked: GitLab not asked again
@@ -65,5 +68,28 @@ describe('MrCache', () => {
     const list = await new MrCache(path, 60_000, f.fn).get();
     expect(list.mrs).toHaveLength(1);
     expect(f.calls()).toBe(0);
+  });
+
+  it('asks GitLab again when the saved list is in an older format', async () => {
+    const path = file();
+    writeFileSync(path, JSON.stringify({ mrs: [{ iid: 9 }], fetchedAt: new Date().toISOString(), stale: false }));
+    const f = fakeFetch([ok()]);
+    const list = await new MrCache(path, 60_000, f.fn).get();
+    expect(f.calls()).toBe(1);
+    expect(list.mrs[0]).toMatchObject({ iid: 1, labels: [], description: '' });
+  });
+});
+
+describe('toMergeRequests', () => {
+  it('keeps labels and description, and leaves Draft MRs out', () => {
+    const mrs = toMergeRequests([
+      { ...mr, iid: 1, labels: ['Need to be tested'], description: '1. Run' },
+      { ...mr, iid: 2, draft: true },
+      { ...mr, iid: 3, work_in_progress: true },
+      { ...mr, iid: 4, description: null },
+    ]);
+    expect(mrs.map((m) => m.iid)).toEqual([1, 4]);
+    expect(mrs[0]).toMatchObject({ labels: ['Need to be tested'], description: '1. Run' });
+    expect(mrs[1]).toMatchObject({ labels: [], description: '' });
   });
 });
