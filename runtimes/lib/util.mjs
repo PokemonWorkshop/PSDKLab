@@ -6,7 +6,7 @@ import { join } from 'node:path';
 
 export const isWin = process.platform === 'win32';
 
-/** Key used in versions.json, "win32-x64" or "linux-x64". */
+/** Key used in versions.json, "win32-x64", "linux-x64" or "darwin-arm64". */
 export function platformKey() {
   return `${process.platform}-${process.arch}`;
 }

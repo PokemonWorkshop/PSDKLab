@@ -14,7 +14,7 @@ The project is currently in the planning and scoping phase. This repository serv
 
 ## Proposed Initial Scope
 
-Provide a straightforward testing workflow on **Windows and Linux**, without requiring Pokémon Studio to be installed or Git to be used manually:
+Provide a straightforward testing workflow on **Windows, Linux and macOS**, without requiring Pokémon Studio to be installed or Git to be used manually:
 
 1. Select a Merge Request from a list, highlighting those ready for testing.
 2. Automatically prepare a project using the technical demo, PSDK binaries, and changes from the selected MR.
@@ -38,7 +38,7 @@ We're looking for volunteers to help with:
 
 - **Ruby / PSDK:** Extend the CLI and automate environment setup.
 - **UI and desktop development:** Build an accessible and intuitive testing experience.
-- **CI and Windows/Linux distribution:** Simplify installation, updates, and maintenance.
+- **CI and Windows/Linux/macOS distribution:** Simplify installation, updates, and maintenance.
 - **User testing, UX, and documentation:** Ensure the tool addresses the actual needs of testers.
 
 The project must remain **free, accessible, and maintainable by a volunteer team**.
@@ -57,4 +57,4 @@ Layout: `app/desktop` (Electron + React), `modules/core` (all the logic, no Elec
 
 ### Bundled tools
 
-`npm run prepare:runtimes` builds `runtimes/dist/` for the current OS (Windows or Linux): portable Git (dugite-native), the published `psdk-cli` and `thor` gems unpacked unchanged from rubygems.org, and 7za. Every URL, version and SHA-256 is pinned in `runtimes/versions.json`. There is no Ruby here: psdk-cli runs with the Ruby shipped in the PSDK binaries.
+`npm run prepare:runtimes` builds `runtimes/dist/` for the current OS (Windows, Linux or macOS): portable Git (dugite-native), the published `psdk-cli` and `thor` gems unpacked unchanged from rubygems.org, and 7za. Every URL, version and SHA-256 is pinned in `runtimes/versions.json`. There is no Ruby here: psdk-cli runs with the Ruby shipped in the PSDK binaries.

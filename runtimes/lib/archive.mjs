@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url);
 
 /**
  * Downloads `url` into `cacheDir` once, then reuses it. curl is used instead of
- * fetch: it ships with Windows 10+ and Linux, and honours HTTPS_PROXY.
+ * fetch: it ships with Windows 10+, Linux and macOS, and honours HTTPS_PROXY.
  */
 export async function download(url, cacheDir, expectedSha) {
   mkdirSync(cacheDir, { recursive: true });
