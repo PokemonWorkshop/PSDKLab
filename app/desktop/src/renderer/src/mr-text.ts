@@ -24,7 +24,7 @@ export function plain(md: string): string {
     .replace(/^\s*(```|~~~)[\s\S]*?^\s*\1[^\n]*$/gm, '') // fenced code blocks
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    .replace(/<[^>]+>/g, '')
+    .replace(/[<>]/g, '')
     .replace(/(\*\*|__|`)/g, '')
     .trim();
 }
