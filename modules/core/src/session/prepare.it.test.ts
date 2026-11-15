@@ -15,7 +15,8 @@ import { runtimesAt } from '../runtimes/layout';
 import { releaseCacheDir } from '../releases/index';
 import type { SessionLock } from './index';
 import { dataLayout, ensureDataLayout } from './layout';
-import { prepareSession, type SessionStep } from './prepare';
+import { prepareSession } from './prepare';
+import type { SessionStep, StepUpdate } from './progress';
 import { missingFiles } from './verify';
 
 const iid = Number(process.env.PSDK_LAB_MR_IID);
@@ -33,22 +34,25 @@ describe.skipIf(!iid || !sha)('prepare a standard MR (integration)', () => {
     'prepares a playable, independent environment and records the versions',
     async () => {
       await ensureDataLayout(data);
-      const steps: SessionStep[] = [];
+      const done: SessionStep[] = [];
+      const fractions: number[] = [];
       const session = await prepareSession({
         rt,
         data,
         mr: { iid, sha },
-        onStep: (s) => steps.push(s),
+        onUpdate: (u: StepUpdate) => {
+          if (u.state === 'done') done.push(u.step);
+          if (u.step === 'demo' && u.fraction !== undefined) fractions.push(u.fraction);
+        },
       });
 
-      expect(steps).toEqual([
-        'demo',
-        'binaries',
-        'mr',
-        'restore',
-        'verify',
-        'ready',
-      ]);
+      // Steps run in parallel: every one finishes once, ready last.
+      expect([...done].sort()).toEqual(
+        ['binaries', 'data', 'demo', 'mr', 'ready', 'restore', 'verify'],
+      );
+      expect(done.at(-1)).toBe('ready');
+      // The demo's progress only moves forward.
+      expect(fractions).toEqual([...fractions].sort((a, b) => a - b));
       expect(session.dir.startsWith(userData)).toBe(true);
       const binariesDir = releaseCacheDir(
         data.cacheDir,
@@ -71,14 +75,16 @@ describe.skipIf(!iid || !sha)('prepare a standard MR (integration)', () => {
   );
 
   it('keeps the ready environment for a later launch', async () => {
-    const steps: SessionStep[] = [];
+    const updates: StepUpdate[] = [];
     const again = await prepareSession({
       rt,
       data,
       mr: { iid, sha },
-      onStep: (s) => steps.push(s),
+      onUpdate: (u) => updates.push(u),
     });
-    expect(steps).toEqual(['ready']);
+    expect(updates).toEqual([
+      { step: 'ready', state: 'done', fraction: 1, detail: { kind: 'cached' } },
+    ]);
     expect(again.lock.mr.iid).toBe(iid);
   });
 });

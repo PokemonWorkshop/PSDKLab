@@ -1,0 +1,177 @@
+{
+  "app": {
+    "eyebrow": "Pokémon Workshop",
+    "name": "PSDK Lab",
+    "language": "Language",
+    "community": "Community contribution project"
+  },
+  "stepper": {
+    "choose": "Choose an MR",
+    "prepare": "Prepare",
+    "launch": "Launch and test"
+  },
+  "runtime": {
+    "checking": "Checking bundled tools…",
+    "checkFailed": "Could not check the bundled tools: {{message}}",
+    "ok": "Bundled tools: Git {{git}} · psdk-cli {{cli}}",
+    "problem": "Bundled tools incomplete: {{problems}}",
+    "devHint": "In development, run npm run prepare:runtimes at the repository root."
+  },
+  "select": {
+    "title": "Which contribution do you want to test?",
+    "subtitle": "Choose an MR, then read its author's instructions.",
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "meta_one": "List from {{time}} · {{count}} non-Draft MR",
+    "meta_other": "List from {{time}} · {{count}} non-Draft MRs",
+    "loadError": "Could not load the MRs: {{message}}",
+    "staleRateLimit": "GitLab rate limits anonymous requests: showing the list from {{time}}, retry possible in {{sec}} s.",
+    "staleUnreachable": "GitLab is unreachable ({{detail}}): showing the list from {{time}}.",
+    "tabProposed": "Proposed for testing",
+    "tabOther": "Other MRs",
+    "priorityNote": "First: label “{{label}}”. Drafts are left out.",
+    "otherNote": "Open MRs without the “{{label}}” label. Drafts are left out.",
+    "proposedBadge": "Proposed for testing",
+    "empty": "No MR in this list.",
+    "labelNote": "The label guides testing. It does not guarantee compatibility with the proposed environment.",
+    "noSelection": "Choose an MR in the list to see its instructions.",
+    "instructions": "Author's instructions",
+    "noInstructions": "The author left no instructions in the MR description.",
+    "openGitlab": "Open the MR on GitLab ↗",
+    "envTitle": "Proposed environment",
+    "envText": "Technical Demo and binaries: latest published releases.",
+    "envNote": "The exact versions will be kept with this session.",
+    "prepare": "Prepare the environment",
+    "readyBadge": "Session ready",
+    "sessionReady": "A session is already ready for this commit (prepared on {{date}}).",
+    "sessionReadyNote": "It launches again without a new download.",
+    "open": "Open the session",
+    "oldSessions_one": "Another session of this MR exists (older commit or unfinished preparation).",
+    "oldSessions_other": "{{count}} other sessions of this MR exist (older commits or unfinished preparations)."
+  },
+  "prepare": {
+    "eyebrow": "Preparing the session",
+    "title": "Your environment is taking shape",
+    "mr": "MR !{{iid}} · {{title}}",
+    "download": "Downloading the binaries",
+    "megabytes": "{{mb}} MB",
+    "cacheHint": "Local cache when available",
+    "footnote": "The first download can take a few minutes. Your other projects stay untouched.",
+    "steps": {
+      "demo": "Get the Technical Demo",
+      "binaries": "Get the binaries for your system",
+      "mr": "Install the MR's engine in the session",
+      "data": "Rebuild the game data",
+      "verify": "Check the files and save the session"
+    },
+    "detail": {
+      "working": "Working…",
+      "cached": "Already in the local cache",
+      "git": {
+        "receive": "Downloading what changed",
+        "resolve": "Checking the received data",
+        "checkout": "Copying from the local cache"
+      },
+      "download": "{{received}} / {{total}} MB",
+      "downloadUnknown": "{{received}} MB",
+      "files": "{{done}} of {{total}} files",
+      "categories": "{{done}} of {{total}} categories",
+      "boot": "Starting PSDK (loading its scripts)…",
+      "lookup": "Looking for changes…"
+    }
+  },
+  "failed": {
+    "eyebrow": "Preparation interrupted",
+    "downloadTitle": "The download did not complete",
+    "title": "The preparation did not complete",
+    "notReady": "Your session is not ready yet.",
+    "cause": {
+      "demo": "The Technical Demo could not be downloaded.",
+      "binaries": "The binaries could not be downloaded.",
+      "mr": "The MR's engine could not be installed.",
+      "restore": "The game data could not be rebuilt.",
+      "data": "The game data could not be converted.",
+      "verify": "Some session files are missing.",
+      "ready": "The session could not be saved."
+    },
+    "downloadAdvice": "Check your connection, then try again. Resources already downloaded and checked stay available in the cache.",
+    "advice": "Try again. If it keeps failing, attach the diagnostic details to your feedback.",
+    "retry": "Try again",
+    "back": "Back to the MRs",
+    "details": "Diagnostic details"
+  },
+  "ready": {
+    "eyebrow": "Environment ready",
+    "title": "You can start testing",
+    "psdk": "Pokémon SDK",
+    "psdkValue": "MR !{{iid}} · {{commit}}",
+    "demo": "Technical Demo",
+    "binaries": "Binaries",
+    "session": "Session",
+    "independent": "Independent test environment",
+    "copy": "Copy the test information",
+    "copied": "Information copied",
+    "relaunchNote": "This session can be launched again without a new download.",
+    "details": "Instructions and diagnostics",
+    "sessionDir": "Session folder",
+    "tools": "psdk-cli {{cli}} · Ruby {{ruby}} · prepared on {{date}}",
+    "back": "← Choose another MR",
+    "report": "MR !{{iid}} · {{title}}\nPokémon SDK {{psdk}} ({{commit}})\nTechnical Demo {{demo}}\nBinaries {{binaries}}\npsdk-cli {{cli}} · Ruby {{ruby}}\nSystem: {{os}}",
+    "gameData": {
+      "restore": "Demo data (.rxdata)",
+      "data": "Studio data (psdk.dat)",
+      "reused": "reused from the cache (key {{key}})",
+      "built": "rebuilt (key {{key}})"
+    }
+  },
+  "game": {
+    "launch": "Launch the game",
+    "launchAgain": "Launch again",
+    "busy": "Game running…",
+    "starting": "Starting the game… PSDK is loading, the window is not open yet.",
+    "running": "Game window open. Check the contribution in the game, then close it to come back here.",
+    "runningPid": "Game window open (pid {{pid}}). Check the contribution in the game, then close it to come back here.",
+    "closed": "Game closed normally. It started and closed without error; this does not validate the MR.",
+    "stopped": "Game stopped by PSDK Lab.",
+    "crashedStartup": "The game failed to start: it exited before its window opened.",
+    "crashedGame": "The game exited with an error while running.",
+    "exitCode": "Exit code {{code}}",
+    "exitSignal": "Signal {{signal}}",
+    "log": "Log: {{path}}",
+    "hint": {
+      "dll-not-found": "A DLL needed by the PSDK Ruby was not found.",
+      "dll-wrong-version": "A DLL needed by the PSDK Ruby is the wrong version.",
+      "dll-bad-image": "A DLL needed by the PSDK Ruby is invalid or built for another architecture.",
+      "access-violation": "The game crashed (access violation).",
+      "not-found": "A command or shared library was not found."
+    },
+    "failedTitle": "The game could not start.",
+    "noFallback": "No other Ruby or PSDK installation is used. Prepare the session again.",
+    "reason": {
+      "invalid-session": "Invalid session id: {{detail}}",
+      "not-prepared": "This session is not prepared (no valid session.lock.json in {{detail}}).",
+      "missing-files": "These files are missing from the session:",
+      "executable-not-found": "Executable not found: {{detail}}",
+      "executable-denied": "The system does not allow running: {{detail}}",
+      "spawn-error": "The game process could not be started: {{detail}}",
+      "data-conversion": "PSDK could not convert the game data ({{detail}})."
+    }
+  },
+  "session": {
+    "remove": "Remove the session",
+    "removeOld_one": "Remove the old session",
+    "removeOld_other": "Remove the {{count}} old sessions",
+    "confirm": "Remove for good? The cache (demo, binaries) is kept.",
+    "confirmYes": "Remove",
+    "cancel": "Cancel",
+    "removing": "Removing…",
+    "gameRunning": "Close this session’s game first.",
+    "removeError": "Could not remove: {{message}}"
+  },
+  "titlebar": {
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "restore": "Restore down",
+    "close": "Close"
+  }
+}

@@ -1,0 +1,379 @@
+/* Colors measured on the MVP mock-ups. */
+:root {
+  --bg: #1d1c22;
+  --bg-sunken: #18171d;
+  --bg-selected: #201f33;
+  --border: #3a3843;
+  --border-soft: #2c2a33;
+  --text: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --text-faint: #8b8a94;
+  --accent: #6562f8;
+  --accent-hover: #7471ff;
+  --accent-light: #8c89ff;
+  --accent-border: #7a75f0;
+  --chip-bg: #24234a;
+  --chip-border: #3a3979;
+  --chip-text: #c4c2ff;
+  --track: #35323d;
+  --green: #34c77b;
+  --orange: #f5a524;
+  --red: #f26d6d;
+  --radius: 8px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    Ubuntu,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+}
+
+a {
+  color: var(--accent-light);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+code,
+pre {
+  font-family: 'Cascadia Mono', Consolas, 'DejaVu Sans Mono', monospace;
+  font-size: 12px;
+}
+
+/* Title bar (Windows, frameless window), measured on Pokémon Studio */
+.titlebar {
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: 32px;
+  background: #26252c;
+  -webkit-app-region: drag;
+  user-select: none;
+}
+.titlebar-title {
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.titlebar-actions {
+  display: flex;
+  height: 100%;
+  margin-left: auto;
+  -webkit-app-region: no-drag;
+}
+.titlebar-actions button {
+  width: 46px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: 'Segoe Fluent Icons', 'Segoe MDL2 Assets';
+  font-size: 10px;
+  cursor: default;
+}
+.titlebar-actions button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.titlebar-actions button:active {
+  background: rgba(255, 255, 255, 0.04);
+}
+.titlebar-actions .close:hover {
+  background: #c42b1c;
+  color: #fff;
+}
+.titlebar-actions .close:active {
+  background: #c8483c;
+}
+
+/* Shell */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 36px;
+  border-bottom: 1px solid var(--border);
+}
+.brand-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.brand-name {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+/* FR | EN switch */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.seg-item {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.seg-item + .seg-item {
+  border-left: 1px solid var(--border);
+}
+.seg-item:hover:not(.active) {
+  color: var(--text);
+}
+.seg-item.active {
+  background: var(--accent);
+  color: #fff;
+}
+.main {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 36px 20px;
+}
+
+/* Thin dark scrollbars, like the rest of the interface. */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 36px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.footer .problem {
+  color: var(--orange);
+}
+
+/* Stepper */
+.stepper {
+  display: flex;
+  gap: 28px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.step-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-faint);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  padding-bottom: 1px; /* Segoe UI digits sit a little low in their box */
+}
+.step.active {
+  color: var(--text);
+}
+.step.active .step-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.step.done .step-dot {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* Buttons */
+.btn {
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--text-faint);
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+.btn-block {
+  width: 100%;
+  padding: 12px 18px;
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent-light);
+  cursor: pointer;
+  padding: 0;
+}
+.link-btn:hover {
+  text-decoration: underline;
+}
+.link-btn.danger {
+  color: var(--red);
+  font-size: 12px;
+}
+.btn-small {
+  padding: 5px 12px;
+  font-size: 12px;
+}
+.btn-danger {
+  background: #8f2f2f;
+  border-color: #8f2f2f;
+  color: #fff;
+}
+.btn-danger:hover:not(:disabled) {
+  background: #a83a3a;
+  border-color: #a83a3a;
+}
+
+/* Activity indicators */
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--track);
+  border-top-color: var(--accent-light);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: -1px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Text helpers */
+.muted {
+  color: var(--text-muted);
+}
+.small {
+  font-size: 12px;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-light);
+}
+.eyebrow.green {
+  color: var(--green);
+}
+.eyebrow.orange {
+  color: var(--orange);
+}
+.chip {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  color: var(--chip-text);
+}
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+.code-box {
+  max-height: 200px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 8px 0 0;
+  color: var(--text-muted);
+}
+details > summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+details[open] > summary {
+  margin-bottom: 10px;
+}

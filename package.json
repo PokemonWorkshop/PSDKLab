@@ -14,7 +14,7 @@
     "build": "npm run build -w @psdk-lab/desktop",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test -w @psdk-lab/core",
+    "test": "npm run test --workspaces --if-present",
     "test:integration": "npm run test:integration -w @psdk-lab/core",
     "prepare:runtimes": "node runtimes/prepare.mjs",
     "package": "npm run prepare:runtimes && npm run package -w @psdk-lab/desktop"
