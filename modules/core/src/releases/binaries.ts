@@ -22,6 +22,7 @@ const rmOpts = {
 export function binariesAsset(platform = process.platform): string {
   if (platform === 'win32') return 'Windows.7z';
   if (platform === 'linux') return 'Linux.7z';
+  if (platform === 'darwin') return 'MacOS.7z';
   throw new Error(`No PSDK binaries for ${platform}`);
 }
 

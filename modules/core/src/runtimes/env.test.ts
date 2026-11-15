@@ -17,7 +17,7 @@ const base = {
 };
 
 describe('buildEnv', () => {
-  for (const platform of ['win32', 'linux'] as const) {
+  for (const platform of ['win32', 'linux', 'darwin'] as const) {
     it(`drops the machine's Ruby setup (${platform})`, () => {
       const env = buildEnv(rt, null, base, platform);
       expect(env.PSDK_CLI_DIR).toBe('/data/psdk-cli');

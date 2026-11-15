@@ -53,7 +53,7 @@ export function requiredFiles(
     join(gameDir, 'Data', 'MapInfos.rxdata'),
     psdkRuby(binariesDir, platform).bin, // PSDK binaries
     ...rubyLibraries(binariesDir, platform),
-    join(libDir, 'LiteRGSS.so'),
+    join(libDir, platform === 'darwin' ? 'LiteRGSS.bundle' : 'LiteRGSS.so'),
   ];
 }
 

@@ -13,6 +13,13 @@
       "sha256": "1efd8ce0516b670b6b6d0f49ecaf395ceb8cf7fff3f5857259763d97a1238df9"
     }
   },
+  "darwin-arm64": {
+    "git": {
+      "version": "2.56.0",
+      "url": "https://github.com/desktop/dugite-native/releases/download/v2.56.0/dugite-native-v2.56.0-a65444d-macOS-arm64.tar.gz",
+      "sha256": "dd1ed1ba1c1426e8117904b1eb233b1fbae43e1401e54de3c7c07b53c0cbf424"
+    }
+  },
   "gems": [
     {
       "name": "thor",
