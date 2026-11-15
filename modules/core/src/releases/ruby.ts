@@ -46,7 +46,50 @@ function linuxRuby(dir: string): PsdkRuby {
   };
 }
 
+/** MacOS.7z: mirrors ruby-dist/setup.sh (Ruby 3.2, arm64-darwin23). */
+function darwinRuby(dir: string): PsdkRuby {
+  const root = join(dir, 'ruby-dist');
+  const rubyLib = join(root, 'lib', 'ruby');
+  const version = existsSync(rubyLib)
+    ? readdirSync(rubyLib).find((d) => /^\d+\.\d+\.\d+$/.test(d))
+    : undefined;
+  const v = version ?? '3.2.0';
+  const versionDir = join(rubyLib, v);
+  const arch = (existsSync(versionDir)
+    ? readdirSync(versionDir, { withFileTypes: true }).find(
+        (d) => d.isDirectory() && /-darwin\d*$/.test(d.name),
+      )?.name
+    : undefined) ?? 'arm64-darwin23';
+  const lib = (...p: string[]) => join(rubyLib, ...p);
+  return {
+    bin: join(root, 'bin', 'ruby'),
+    path: [join(root, 'bin')],
+    env: {
+      DYLD_LIBRARY_PATH: join(root, 'lib'),
+      LD_LIBRARY_PATH: [
+        join(root, 'bin'),
+        join(root, 'lib'),
+        join(root, 'openssl', 'lib'),
+      ].join(':'),
+      RUBYLIB: [
+        lib('site_ruby', v),
+        lib('site_ruby', v, arch),
+        lib('site_ruby'),
+        lib('vendor_ruby', v),
+        lib('vendor_ruby', v, arch),
+        lib('vendor_ruby'),
+        lib(v),
+        lib(v, arch),
+      ].join(':'),
+      RUBYOPT: '--encoding utf-8:utf-8 -rclean_load_path',
+    },
+  };
+}
+
 /** Ruby of the PSDK binaries extracted in `dir` (cache/binaries/<version>). */
 export function psdkRuby(dir: string, platform = process.platform): PsdkRuby {
-  return platform === 'win32' ? windowsRuby(dir) : linuxRuby(dir);
+  if (platform === 'win32') return windowsRuby(dir);
+  if (platform === 'linux') return linuxRuby(dir);
+  if (platform === 'darwin') return darwinRuby(dir);
+  throw new Error(`No PSDK Ruby for ${platform}`);
 }

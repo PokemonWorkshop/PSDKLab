@@ -42,13 +42,16 @@ describe('session', () => {
     );
   });
 
-  for (const platform of ['win32', 'linux'] as const) {
+  for (const platform of ['win32', 'linux', 'darwin'] as const) {
     it(`is ready only when every required file exists (${platform})`, () => {
       // Spaces and accents on purpose: sessions live in the user's profile.
       const root = mkdtempSync(join(tmpdir(), 'psdk lab é '));
       const game = join(root, 'session à tester', 'game');
       const binaries = join(root, 'binaries 1.1.1');
       const files = requiredFiles(game, binaries, platform);
+      const libDir = platform === 'win32' ? 'lib' : 'ruby-dist/lib';
+      const extension = platform === 'darwin' ? 'bundle' : 'so';
+      expect(files).toContain(join(binaries, libDir, `LiteRGSS.${extension}`));
       expect(missingFiles(game, binaries, platform)).toEqual(files);
       for (const f of files.slice(1)) {
         mkdirSync(dirname(f), { recursive: true });
