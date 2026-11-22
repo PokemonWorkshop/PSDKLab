@@ -8,6 +8,7 @@ import { toMergeRequests } from './index';
 
 const mr = {
   iid: 1,
+  project_id: 7677638,
   title: 'Fix',
   author: { username: 'a' },
   source_branch: 'b',
@@ -76,7 +77,7 @@ describe('MrCache', () => {
     const f = fakeFetch([ok()]);
     const list = await new MrCache(path, 60_000, f.fn).get();
     expect(f.calls()).toBe(1);
-    expect(list.mrs[0]).toMatchObject({ iid: 1, labels: [], description: '' });
+    expect(list.mrs[0]).toMatchObject({ iid: 1, projectId: 7677638, labels: [], description: '' });
   });
 });
 

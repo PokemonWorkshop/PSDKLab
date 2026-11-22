@@ -41,7 +41,7 @@ export function App() {
         <SelectScreen
           selected={mr}
           onSelect={select}
-          onPrepare={() => send({ type: 'PREPARE' })}
+          onPrepare={(replace) => send({ type: 'PREPARE', replace })}
           sessions={sessions}
           onOpen={(s) => send({ type: 'OPEN', session: s })}
           onSessionsChanged={refresh}
@@ -64,6 +64,7 @@ export function App() {
           mr={mr}
           session={session}
           onBack={() => send({ type: 'BACK' })}
+          onUpdate={() => send({ type: 'PREPARE', replace: [session.id] })}
         />
       )}
     </Shell>

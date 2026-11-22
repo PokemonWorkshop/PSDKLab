@@ -1,26 +1,25 @@
 import { useTranslation } from 'react-i18next';
-import { LANGUAGES, setLanguage } from './i18n';
+import { LANGUAGE_CODES, LANGUAGES, setLanguage, type Language } from './i18n';
 
-/** FR | EN switch styled like the rest of the interface; remembered on this computer. */
+/** Language choice, one row per entry of LANGUAGES. */
 export function LanguageSelect() {
   const { t, i18n } = useTranslation();
+  const current = (i18n.resolvedLanguage ?? 'en') as Language;
   return (
-    <div className="seg" role="radiogroup" aria-label={t('app.language')}>
-      {LANGUAGES.map((l) => {
-        const active = i18n.resolvedLanguage === l;
-        return (
-          <button
-            key={l}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            className={`seg-item${active ? ' active' : ''}`}
-            onClick={() => setLanguage(l)}
-          >
-            {l.toUpperCase()}
-          </button>
-        );
-      })}
+    <div className="lang-list" role="radiogroup" aria-label={t('app.language')}>
+      {LANGUAGE_CODES.map((code) => (
+        <button
+          key={code}
+          type="button"
+          role="radio"
+          aria-checked={code === current}
+          className="lang-option"
+          onClick={() => setLanguage(code)}
+        >
+          <span className="radio" aria-hidden="true" />
+          {LANGUAGES[code].name}
+        </button>
+      ))}
     </div>
   );
 }

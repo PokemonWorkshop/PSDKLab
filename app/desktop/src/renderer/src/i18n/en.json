@@ -47,7 +47,14 @@
     "sessionReadyNote": "It launches again without a new download.",
     "open": "Open the session",
     "oldSessions_one": "Another session of this MR exists (older commit or unfinished preparation).",
-    "oldSessions_other": "{{count}} other sessions of this MR exist (older commits or unfinished preparations)."
+    "oldSessions_other": "{{count}} other sessions of this MR exist (older commits or unfinished preparations).",
+    "byline": "By {{author}} · branch {{branch}}",
+    "noDescription": "The author left no description.",
+    "templateIntro": "Author's submission checklist (MR template)",
+    "updateAvailable": "New commits on this MR: your session is on {{from}}, the MR is now on {{to}}.",
+    "updateNote": "The cache is reused: only the MR's engine and the game data change. The old session is removed once the new one is ready.",
+    "update": "Update the session",
+    "openOld": "Open the old session ({{commit}})"
   },
   "prepare": {
     "eyebrow": "Preparing the session",
@@ -115,14 +122,15 @@
     "details": "Instructions and diagnostics",
     "sessionDir": "Session folder",
     "tools": "psdk-cli {{cli}} · Ruby {{ruby}} · prepared on {{date}}",
-    "back": "← Choose another MR",
+    "back": "Choose another MR",
     "report": "MR !{{iid}} · {{title}}\nPokémon SDK {{psdk}} ({{commit}})\nTechnical Demo {{demo}}\nBinaries {{binaries}}\npsdk-cli {{cli}} · Ruby {{ruby}}\nSystem: {{os}}",
     "gameData": {
       "restore": "Demo data (.rxdata)",
       "data": "Studio data (psdk.dat)",
       "reused": "reused from the cache (key {{key}})",
       "built": "rebuilt (key {{key}})"
-    }
+    },
+    "diagnostics": "Diagnostics"
   },
   "game": {
     "launch": "Launch the game",
@@ -131,7 +139,7 @@
     "starting": "Starting the game… PSDK is loading, the window is not open yet.",
     "running": "Game window open. Check the contribution in the game, then close it to come back here.",
     "runningPid": "Game window open (pid {{pid}}). Check the contribution in the game, then close it to come back here.",
-    "closed": "Game closed normally. It started and closed without error; this does not validate the MR.",
+    "closed": "Game closed normally. It started and closed without error, which does not validate the MR.",
     "stopped": "Game stopped by PSDK Lab.",
     "crashedStartup": "The game failed to start: it exited before its window opened.",
     "crashedGame": "The game exited with an error while running.",
@@ -173,5 +181,75 @@
     "maximize": "Maximize",
     "restore": "Restore down",
     "close": "Close"
+  },
+  "account": {
+    "guest": "Not signed in",
+    "guestNote": "Read only · sign in to comment",
+    "signIn": "Sign in with GitLab",
+    "signingIn": "Waiting for GitLab…",
+    "signOut": "Sign out",
+    "profile": "My GitLab profile ↗",
+    "settings": "Settings",
+    "menuOf": "Account: {{name}}",
+    "menuGuest": "Account: not signed in",
+    "error": {
+      "timeout": "Sign-in timed out: GitLab did not answer within 5 minutes.",
+      "access_denied": "Sign-in refused on GitLab.",
+      "not-configured": "Sign-in is not available in this build: no GitLab OAuth application is configured.",
+      "port": "Sign-in could not start: port 41917 of this computer is already in use.",
+      "other": "Sign-in failed. Try again.",
+      "invalid-token": "GitLab refused this token: it is invalid, expired or revoked.",
+      "token-scope": "This token cannot read the API: give it the api scope (or read_api to read only)."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "close": "Close",
+    "account": "GitLab account",
+    "guestText": "You can read the MRs and their discussions without an account.",
+    "cancel": "Cancel",
+    "browserOpened": "GitLab opened in your browser. Authorize PSDK Lab there, then come back here.",
+    "scopes": "Access asked: {{scopes}}. Needed to reply and comment in your name. PSDK Lab never receives your password.",
+    "memoryOnly": "No secure storage on this system: you stay signed in until PSDK Lab is closed.",
+    "repository": "Repository",
+    "preset": "PSDK preset",
+    "repositoryNote": "Official Pokémon SDK repository. Choosing another repository will come later.",
+    "tokenInstead": "Use a personal access token instead",
+    "tokenText": "Paste a GitLab personal access token with the api scope (read_api to read only). It is checked on GitLab, then kept encrypted on this computer.",
+    "tokenCreate": "Create a token on GitLab ↗",
+    "tokenLabel": "Personal access token",
+    "tokenSubmit": "Sign in",
+    "tokenChecking": "Checking…",
+    "viaToken": "Signed in with a personal access token. Signing out forgets it here. Revoke it on GitLab if you no longer use it.",
+    "viaReadOnlyToken": "Signed in with a read-only token (read_api): you can read, not comment. Use a token with the api scope to comment.",
+    "about": "About",
+    "system": "System",
+    "tools": "Bundled tools"
+  },
+  "discussions": {
+    "title_one": "Discussion · {{count}} comment",
+    "title_other": "Discussion · {{count}} comments",
+    "empty": "No comment yet.",
+    "loadError": "Could not load the discussion: {{message}}",
+    "stale": "GitLab is unreachable: showing the discussion from {{time}}.",
+    "staleRateLimit": "GitLab rate limits requests: showing the discussion from {{time}}, retry possible in {{sec}} s.",
+    "resolved": "Resolved",
+    "unresolved": "Unresolved",
+    "reply": "Reply",
+    "replyPlaceholder": "Reply in this thread…",
+    "commentPlaceholder": "Add a comment (your test results, a question…)",
+    "markdownHint": "Markdown · Ctrl+Enter to send",
+    "send": "Comment",
+    "posting": "Sending…",
+    "cancel": "Cancel",
+    "signInToComment": "Sign in with GitLab to reply and comment.",
+    "error": {
+      "signed-out": "You are signed out: sign in again to comment.",
+      "forbidden": "GitLab does not allow this account to comment on this MR.",
+      "empty-comment": "The comment is empty.",
+      "other": "Could not send: {{message}}",
+      "read-only-token": "Your token is read-only (read_api): comments need the api scope."
+    },
+    "signInToRead": "GitLab does not show this discussion without an account: sign in to read it."
   }
 }

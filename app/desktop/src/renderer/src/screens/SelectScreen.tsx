@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SessionReport } from '../../../shared/ipc';
 import { EnvironmentBox, readySession } from '../components/EnvironmentBox';
-import { Markdown } from '../components/Markdown';
-import { instructions, isProposed, summary } from '../mr-text';
+import { Discussions } from '../components/Discussions';
+import { MrDescription } from '../components/MrDescription';
+import { isProposed, summary } from '../mr-text';
 import { StaleNotice, time, useMrList } from './mr-list';
 
 function MrCard(props: {
@@ -49,13 +50,10 @@ type SessionProps = {
   onSessionsChanged: () => void;
 };
 
-function MrDetail(props: { mr: MergeRequest | null; onPrepare: () => void } & SessionProps) {
+function MrDetail(props: { mr: MergeRequest | null; onPrepare: (replace?: string[]) => void } & SessionProps) {
   const { t } = useTranslation();
   const { mr } = props;
   if (!mr) return <p className="muted detail-empty">{t('select.noSelection')}</p>;
-  const how = instructions(mr.description);
-  // The whole description is shown below when it has no "how to test" section.
-  const about = how.section ? summary(mr.description) : '';
   return (
     <>
       <div className="detail-body">
@@ -68,18 +66,15 @@ function MrDetail(props: { mr: MergeRequest | null; onPrepare: () => void } & Se
         ))}
       </div>
       <div className="detail-title">{mr.title}</div>
-      {about && <div className="muted">{about}</div>}
-      <div className="detail-section">{t('select.instructions')}</div>
-      {how.markdown ? (
-        <Markdown>{how.markdown}</Markdown>
-      ) : (
-        <p className="muted small">{t('select.noInstructions')}</p>
-      )}
-      <p className="small" style={{ marginTop: 14 }}>
+      <div className="detail-byline muted small">
+        {t('select.byline', { author: mr.author, branch: mr.sourceBranch })}
+        {' · '}
         <a href={mr.webUrl} target="_blank" rel="noreferrer">
           {t('select.openGitlab')}
         </a>
-      </p>
+      </div>
+      <MrDescription description={mr.description} projectId={mr.projectId} />
+      <Discussions iid={mr.iid} projectId={mr.projectId} />
       </div>
       <EnvironmentBox
         mr={mr}
@@ -96,7 +91,7 @@ function MrDetail(props: { mr: MergeRequest | null; onPrepare: () => void } & Se
 export function SelectScreen(props: {
   selected: MergeRequest | null;
   onSelect: (mr: MergeRequest) => void;
-  onPrepare: () => void;
+  onPrepare: (replace?: string[]) => void;
 } & SessionProps) {
   const { t } = useTranslation();
   const { list, error, loading, refresh } = useMrList();
