@@ -10,15 +10,17 @@ export function readySession(mr: MergeRequest, sessions: SessionSummary[]) {
   return sessions.find((s) => s.id === id && s.ready) ?? null;
 }
 
-/**
- * Bottom of the MR detail: "Prepare the environment", or "Open the session"
- * when this commit is already prepared. Older or unfinished sessions of the
- * MR can be removed from here.
- */
+/** Ready sessions of the MR prepared for an older head: they can be updated. */
+export function outdatedSessions(mr: MergeRequest, sessions: SessionSummary[]) {
+  const id = sessionId(mr.iid, mr.sha);
+  return sessions.filter((s) => s.mrIid === mr.iid && s.id !== id && s.ready);
+}
+
+/** Bottom of the MR detail: prepare, update, or open the session of this head. */
 export function EnvironmentBox(props: {
   mr: MergeRequest;
   sessions: SessionSummary[];
-  onPrepare: () => void;
+  onPrepare: (replace?: string[]) => void;
   onOpen: (session: SessionReport) => void;
   onSessionsChanged: () => void;
 }) {
@@ -26,7 +28,11 @@ export function EnvironmentBox(props: {
   const { mr, sessions } = props;
   const current = readySession(mr, sessions);
   const report = current && toReport(current);
-  const others = sessions.filter((s) => s.mrIid === mr.iid && s !== current);
+  const outdated = current ? [] : outdatedSessions(mr, sessions);
+  const old = outdated[0] ? toReport(outdated[0]) : null;
+  const others = sessions.filter(
+    (s) => s.mrIid === mr.iid && s !== current && !outdated.includes(s),
+  );
   const date = (iso: string) =>
     new Date(iso).toLocaleString(i18n.resolvedLanguage);
 
@@ -58,6 +64,29 @@ export function EnvironmentBox(props: {
             onRemoved={props.onSessionsChanged}
           />
         </>
+      ) : old ? (
+        <>
+          <div className="small">
+            <span className="update-dot" />
+            {t('select.updateAvailable', {
+              from: old.lock.mr.sha.slice(0, 7),
+              to: mr.sha.slice(0, 7),
+            })}
+          </div>
+          <p className="muted small" style={{ margin: '6px 0 20px' }}>
+            {t('select.updateNote')}
+          </p>
+          <button
+            type="button"
+            className="btn btn-primary btn-block"
+            onClick={() => props.onPrepare(outdated.map((s) => s.id))}
+          >
+            {t('select.update')}
+          </button>
+          <button type="button" className="link-btn small open-old" onClick={() => props.onOpen(old)}>
+            {t('select.openOld', { commit: old.lock.mr.sha.slice(0, 7) })}
+          </button>
+        </>
       ) : (
         <>
           <div className="small">{t('select.envText')}</div>
@@ -67,7 +96,7 @@ export function EnvironmentBox(props: {
           <button
             type="button"
             className="btn btn-primary btn-block"
-            onClick={props.onPrepare}
+            onClick={() => props.onPrepare()}
           >
             {t('select.prepare')}
           </button>

@@ -5,7 +5,7 @@ import type { SessionReport } from '../../../shared/ipc';
 import { GamePanel } from '../components/GamePanel';
 import { Markdown } from '../components/Markdown';
 import { RemoveSessions } from '../components/Sessions';
-import { osName } from '../components/Shell';
+import { osName } from '../os';
 import { instructions } from '../mr-text';
 
 function Fact({
@@ -44,13 +44,48 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-/** Step 3: the session is ready; launch the game, then come back. */
+/** Session folder, tools and game data keys, folded under the launch. */
+function Diagnostics({ session }: { session: SessionReport }) {
+  const { t, i18n } = useTranslation();
+  const { lock } = session;
+  const parts = lock.gameData
+    ? (['restore', 'data'] as const).map(
+        (part) =>
+          `\n${t(`ready.gameData.${part}`)} : ` +
+          t(
+            lock.gameData![part].reused
+              ? 'ready.gameData.reused'
+              : 'ready.gameData.built',
+            { key: lock.gameData![part].key },
+          ),
+      )
+    : [];
+  return (
+    <details className="ready-diagnostics">
+      <summary>{t('ready.diagnostics')}</summary>
+      <pre className="code-box">
+        {`${t('ready.sessionDir')} : ${session.dir}\n` +
+          t('ready.tools', {
+            cli: lock.psdkCliVersion,
+            ruby: lock.rubyVersion,
+            date: new Date(lock.preparedAt).toLocaleString(
+              i18n.resolvedLanguage,
+            ),
+          }) +
+          parts.join('')}
+      </pre>
+    </details>
+  );
+}
+
+/** Step 3: the session is ready, launch the game, then come back. */
 export function ReadyScreen(props: {
   mr: MergeRequest;
   session: SessionReport;
   onBack: () => void;
+  onUpdate: () => void;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { mr, session } = props;
   const { lock } = session;
   const commit = lock.pokemonsdk.commit.slice(0, 7);
@@ -68,69 +103,78 @@ export function ReadyScreen(props: {
   });
 
   return (
-    <div className="center">
-      <div className="center-head">
-        <div className="eyebrow green">{t('ready.eyebrow')}</div>
-        <h1 className="center-title">{t('ready.title')}</h1>
-        <div className="center-sub">
-          {t('prepare.mr', { iid: mr.iid, title: mr.title })}
+    <div className="ready">
+      <div className="ready-body">
+        <div className="ready-main">
+          <div className="ready-top">
+            <button
+              type="button"
+              className="btn btn-small"
+              onClick={props.onBack}
+            >
+              {t('ready.back')}
+            </button>
+            <RemoveSessions
+              ids={[session.id]}
+              label={t('session.remove')}
+              onRemoved={props.onBack}
+              button
+            />
+          </div>
+          <div className="center-head">
+            <div className="eyebrow green">{t('ready.eyebrow')}</div>
+            <h1 className="center-title">{t('ready.title')}</h1>
+            <div className="center-sub">
+              {t('prepare.mr', { iid: mr.iid, title: mr.title })}
+            </div>
+          </div>
+          <div className="facts">
+            <Fact
+              label={t('ready.psdk')}
+              value={t('ready.psdkValue', { iid: lock.mr.iid, commit })}
+              note={lock.pokemonsdk.version}
+            />
+            <Fact label={t('ready.demo')} value={lock.demo.version} />
+            <Fact label={t('ready.binaries')} value={lock.binariesVersion} />
+            <Fact label={t('ready.session')} value={t('ready.independent')} />
+          </div>
+          {lock.mr.sha !== mr.sha && (
+            <div className="update-banner">
+              <span className="small">
+                <span className="update-dot" />
+                {t('select.updateAvailable', {
+                  from: lock.mr.sha.slice(0, 7),
+                  to: mr.sha.slice(0, 7),
+                })}
+              </span>
+              <button
+                type="button"
+                className="btn btn-small"
+                onClick={props.onUpdate}
+              >
+                {t('select.update')}
+              </button>
+            </div>
+          )}
+          <GamePanel
+            sessionId={session.id}
+            extra={<CopyButton text={report} />}
+          />
+          <p className="muted small" style={{ marginTop: 12 }}>
+            {t('ready.relaunchNote')}
+          </p>
+          <Diagnostics session={session} />
         </div>
-      </div>
-      <div className="facts">
-        <Fact
-          label={t('ready.psdk')}
-          value={t('ready.psdkValue', { iid: lock.mr.iid, commit })}
-          note={lock.pokemonsdk.version}
-        />
-        <Fact label={t('ready.demo')} value={lock.demo.version} />
-        <Fact label={t('ready.binaries')} value={lock.binariesVersion} />
-        <Fact label={t('ready.session')} value={t('ready.independent')} />
-      </div>
-      <GamePanel sessionId={session.id} extra={<CopyButton text={report} />} />
-      <p className="muted small" style={{ marginTop: 12 }}>
-        {t('ready.relaunchNote')}
-      </p>
-      <hr className="divider" />
-      <details>
-        <summary>{t('ready.details')}</summary>
-        {how.markdown && <Markdown>{how.markdown}</Markdown>}
-        <pre className="code-box">
-          {`${t('ready.sessionDir')} : ${session.dir}\n` +
-            t('ready.tools', {
-              cli: lock.psdkCliVersion,
-              ruby: lock.rubyVersion,
-              date: new Date(lock.preparedAt).toLocaleString(
-                i18n.resolvedLanguage,
-              ),
-            }) +
-            (lock.gameData
-              ? (['restore', 'data'] as const)
-                  .map(
-                    (part) =>
-                      `
-${t(`ready.gameData.${part}`)} : ` +
-                      t(
-                        lock.gameData![part].reused
-                          ? 'ready.gameData.reused'
-                          : 'ready.gameData.built',
-                        {
-                          key: lock.gameData![part].key,
-                        },
-                      ),
-                  )
-                  .join('')
-              : '')}
-        </pre>
-      </details>
-      <div className="back">
-        <button type="button" className="link-btn" onClick={props.onBack}>
-          {t('ready.back')}
-        </button>
-        <RemoveSessions
-          ids={[session.id]}
-          label={t('session.remove')}
-          onRemoved={props.onBack}
-        />
+        <aside className="ready-side">
+          <div className="detail-section" style={{ marginTop: 0 }}>
+            {t('select.instructions')}
+          </div>
+          {how.markdown ? (
+            <Markdown projectId={mr.projectId}>{how.markdown}</Markdown>
+          ) : (
+            <p className="muted small">{t('select.noInstructions')}</p>
+          )}
+        </aside>
       </div>
     </div>
   );

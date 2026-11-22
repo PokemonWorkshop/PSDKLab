@@ -47,7 +47,14 @@
     "sessionReadyNote": "Elle se relance sans nouveau téléchargement.",
     "open": "Ouvrir la session",
     "oldSessions_one": "Une autre session de cette MR existe (ancien commit ou préparation inachevée).",
-    "oldSessions_other": "{{count}} autres sessions de cette MR existent (anciens commits ou préparations inachevées)."
+    "oldSessions_other": "{{count}} autres sessions de cette MR existent (anciens commits ou préparations inachevées).",
+    "byline": "Par {{author}} · branche {{branch}}",
+    "noDescription": "L’auteur n’a pas laissé de description.",
+    "templateIntro": "Checklist de soumission de l’auteur (modèle de MR)",
+    "updateAvailable": "Nouveaux commits sur cette MR : votre session est sur {{from}}, la MR est maintenant sur {{to}}.",
+    "updateNote": "Le cache est réutilisé : seuls le moteur de la MR et les données du jeu changent. L’ancienne session est supprimée une fois la nouvelle prête.",
+    "update": "Mettre à jour la session",
+    "openOld": "Ouvrir l’ancienne session ({{commit}})"
   },
   "prepare": {
     "eyebrow": "Préparation de la session",
@@ -115,14 +122,15 @@
     "details": "Consignes et diagnostic",
     "sessionDir": "Dossier de la session",
     "tools": "psdk-cli {{cli}} · Ruby {{ruby}} · préparée le {{date}}",
-    "back": "← Choisir une autre MR",
+    "back": "Choisir une autre MR",
     "report": "MR !{{iid}} · {{title}}\nPokémon SDK {{psdk}} ({{commit}})\nDémo Technique {{demo}}\nBinaires {{binaries}}\npsdk-cli {{cli}} · Ruby {{ruby}}\nSystème : {{os}}",
     "gameData": {
       "restore": "Données de la démo (.rxdata)",
       "data": "Données Studio (psdk.dat)",
       "reused": "réutilisées depuis le cache (clé {{key}})",
       "built": "reconstruites (clé {{key}})"
-    }
+    },
+    "diagnostics": "Diagnostic"
   },
   "game": {
     "launch": "Lancer le jeu",
@@ -131,7 +139,7 @@
     "starting": "Démarrage du jeu… PSDK se charge, la fenêtre n’est pas encore ouverte.",
     "running": "Fenêtre du jeu ouverte. Vérifiez la contribution dans le jeu, puis fermez-le pour revenir ici.",
     "runningPid": "Fenêtre du jeu ouverte (pid {{pid}}). Vérifiez la contribution dans le jeu, puis fermez-le pour revenir ici.",
-    "closed": "Jeu fermé normalement. Il a démarré et s’est fermé sans erreur ; cela ne valide pas la MR.",
+    "closed": "Jeu fermé normalement. Il a démarré et s’est fermé sans erreur, cela ne valide pas la MR.",
     "stopped": "Jeu arrêté par PSDK Lab.",
     "crashedStartup": "Le jeu n’a pas pu démarrer : il s’est arrêté avant d’ouvrir sa fenêtre.",
     "crashedGame": "Le jeu s’est arrêté sur une erreur pendant la partie.",
@@ -173,5 +181,75 @@
     "maximize": "Agrandir",
     "restore": "Niveau inférieur",
     "close": "Fermer"
+  },
+  "account": {
+    "guest": "Non connecté",
+    "guestNote": "Lecture seule · connectez-vous pour commenter",
+    "signIn": "Se connecter avec GitLab",
+    "signingIn": "En attente de GitLab…",
+    "signOut": "Se déconnecter",
+    "profile": "Mon profil GitLab ↗",
+    "settings": "Paramètres",
+    "menuOf": "Compte : {{name}}",
+    "menuGuest": "Compte : non connecté",
+    "error": {
+      "timeout": "Connexion expirée : GitLab n’a pas répondu en 5 minutes.",
+      "access_denied": "Connexion refusée sur GitLab.",
+      "not-configured": "La connexion n’est pas disponible dans cette version : aucune application OAuth GitLab n’est configurée.",
+      "port": "La connexion n’a pas pu démarrer : le port 41917 de cet ordinateur est déjà utilisé.",
+      "other": "La connexion a échoué. Réessayez.",
+      "invalid-token": "GitLab refuse ce token : il est invalide, expiré ou révoqué.",
+      "token-scope": "Ce token ne peut pas lire l’API : donnez-lui le scope api (ou read_api pour la lecture seule)."
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "close": "Fermer",
+    "account": "Compte GitLab",
+    "guestText": "Vous pouvez lire les MR et leurs discussions sans compte.",
+    "cancel": "Annuler",
+    "browserOpened": "GitLab s’est ouvert dans votre navigateur. Autorisez PSDK Lab, puis revenez ici.",
+    "scopes": "Accès demandé : {{scopes}}. Nécessaire pour répondre et commenter en votre nom. PSDK Lab ne reçoit jamais votre mot de passe.",
+    "memoryOnly": "Pas de stockage sécurisé sur ce système : vous restez connecté jusqu’à la fermeture de PSDK Lab.",
+    "repository": "Dépôt",
+    "preset": "Preset PSDK",
+    "repositoryNote": "Dépôt officiel de Pokémon SDK. Le choix d’un autre dépôt viendra plus tard.",
+    "tokenInstead": "Utiliser plutôt un token d’accès personnel",
+    "tokenText": "Collez un token d’accès personnel GitLab avec le scope api (read_api pour la lecture seule). Il est vérifié sur GitLab, puis conservé chiffré sur cet ordinateur.",
+    "tokenCreate": "Créer un token sur GitLab ↗",
+    "tokenLabel": "Token d’accès personnel",
+    "tokenSubmit": "Se connecter",
+    "tokenChecking": "Vérification…",
+    "viaToken": "Connecté avec un token d’accès personnel. Se déconnecter l’oublie ici. Révoquez-le sur GitLab si vous ne l’utilisez plus.",
+    "viaReadOnlyToken": "Connecté avec un token en lecture seule (read_api) : vous pouvez lire, pas commenter. Utilisez un token avec le scope api pour commenter.",
+    "about": "À propos",
+    "system": "Système",
+    "tools": "Outils embarqués"
+  },
+  "discussions": {
+    "title_one": "Discussion · {{count}} commentaire",
+    "title_other": "Discussion · {{count}} commentaires",
+    "empty": "Aucun commentaire pour l’instant.",
+    "loadError": "Impossible de charger la discussion : {{message}}",
+    "stale": "GitLab est injoignable : discussion de {{time}} affichée.",
+    "staleRateLimit": "GitLab limite les requêtes : discussion de {{time}} affichée, nouvel essai possible dans {{sec}} s.",
+    "resolved": "Résolu",
+    "unresolved": "Non résolu",
+    "reply": "Répondre",
+    "replyPlaceholder": "Répondre dans ce fil…",
+    "commentPlaceholder": "Ajouter un commentaire (vos résultats de test, une question…)",
+    "markdownHint": "Markdown · Ctrl+Entrée pour envoyer",
+    "send": "Commenter",
+    "posting": "Envoi…",
+    "cancel": "Annuler",
+    "signInToComment": "Connectez-vous avec GitLab pour répondre et commenter.",
+    "error": {
+      "signed-out": "Vous êtes déconnecté : reconnectez-vous pour commenter.",
+      "forbidden": "GitLab n’autorise pas ce compte à commenter cette MR.",
+      "empty-comment": "Le commentaire est vide.",
+      "other": "Envoi impossible : {{message}}",
+      "read-only-token": "Votre token est en lecture seule (read_api) : commenter demande le scope api."
+    },
+    "signInToRead": "GitLab n’affiche pas cette discussion sans compte : connectez-vous pour la lire."
   }
 }

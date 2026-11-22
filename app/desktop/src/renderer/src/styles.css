@@ -52,6 +52,15 @@ button {
   font: inherit;
 }
 
+/* Focus ring for the keyboard only, never after a click */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid rgba(140, 137, 255, 0.5);
+  outline-offset: 2px;
+}
+
 a {
   color: var(--accent-light);
   text-decoration: none;
@@ -221,30 +230,33 @@ pre {
   gap: 10px;
 }
 .step-dot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   flex: none;
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 1.5px solid var(--text-faint);
+  /* Ring drawn inside: the 22px box stays even, so the digit is not shifted by half a pixel */
+  box-shadow: inset 0 0 0 1.5px var(--text-faint);
   font-size: 11px;
   font-weight: 600;
+}
+/* The digit is trimmed to its real height, so it sits in the middle whatever the font */
+.step-dot > span {
+  display: block;
   line-height: 1;
-  font-variant-numeric: tabular-nums;
-  padding-bottom: 1px; /* Segoe UI digits sit a little low in their box */
+  text-box: trim-both cap alphabetic;
 }
 .step.active {
   color: var(--text);
 }
 .step.active .step-dot {
   background: var(--accent);
-  border-color: var(--accent);
+  box-shadow: none;
   color: #fff;
 }
 .step.done .step-dot {
-  border-color: var(--green);
+  box-shadow: inset 0 0 0 1.5px var(--green);
   color: var(--green);
 }
 
@@ -255,12 +267,12 @@ pre {
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  border: 1px solid var(--border);
-  background: transparent;
+  border: 1px solid transparent;
+  background: #2a2930;
   color: var(--text);
 }
 .btn:hover:not(:disabled) {
-  border-color: var(--text-faint);
+  background: #33313b;
 }
 .btn:disabled {
   opacity: 0.55;

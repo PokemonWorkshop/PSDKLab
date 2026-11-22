@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import en from './en.json';
-import fr from './fr.json';
+import { LANGUAGE_CODES, LANGUAGES } from './index';
 
 type Tree = { [key: string]: string | Tree };
 
@@ -18,7 +17,9 @@ function shape(tree: Tree, prefix = ''): Record<string, string> {
 }
 
 describe('translations', () => {
-  it('has the same keys, variables and tags in French as in English', () => {
-    expect(shape(fr)).toEqual(shape(en));
-  });
+  const reference = shape(LANGUAGES.en.strings as Tree);
+  for (const code of LANGUAGE_CODES.filter((c) => c !== 'en'))
+    it(`has the same keys, variables and tags in ${LANGUAGES[code].name} as in English`, () => {
+      expect(shape(LANGUAGES[code].strings as Tree)).toEqual(reference);
+    });
 });

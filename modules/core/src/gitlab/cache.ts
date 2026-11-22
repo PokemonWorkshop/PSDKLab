@@ -32,6 +32,8 @@ export class MrCache {
     private readonly ttlMs = DEFAULT_TTL_MS,
     private readonly fetchFn: typeof fetch = fetch,
     private readonly now: () => number = Date.now,
+    /** Token of the signed-in account (its own quota), else anonymous. */
+    private readonly token: () => Promise<string | null> = async () => null,
   ) {}
 
   /** `force` skips the freshness check (Refresh button), never the rate-limit wait. */
@@ -55,7 +57,11 @@ export class MrCache {
     if (this.now() < this.blockedUntil)
       return this.fallback(this.waitNotice(), this.waitReason());
     try {
-      const mrs = await listMergeRequests(undefined, this.fetchFn);
+      const mrs = await listMergeRequests(
+        undefined,
+        this.fetchFn,
+        await this.token(),
+      );
       this.list = {
         mrs,
         fetchedAt: new Date(this.now()).toISOString(),
@@ -90,7 +96,7 @@ export class MrCache {
     return `GitLab rate limits anonymous requests: retry possible in ${this.waitSec()} s.`;
   }
 
-  /** Last known list with a notice; without one, the error is surfaced. */
+  /** Last known list with a notice, without one, the error is surfaced. */
   private fallback(
     notice: string,
     staleReason: StaleReason,
@@ -105,8 +111,12 @@ export class MrCache {
   private async readDisk(): Promise<MrList | null> {
     try {
       const list = JSON.parse(await readFile(this.file, 'utf8')) as MrList;
-      // Lists saved before labels and descriptions were kept are asked again.
-      return list.mrs.every((mr) => Array.isArray(mr.labels)) ? list : null;
+      // Lists saved before labels, descriptions and project ids were kept are asked again.
+      return list.mrs.every(
+        (mr) => Array.isArray(mr.labels) && typeof mr.projectId === 'number',
+      )
+        ? list
+        : null;
     } catch {
       return null;
     }

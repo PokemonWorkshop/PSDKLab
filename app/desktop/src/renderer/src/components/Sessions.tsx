@@ -34,6 +34,7 @@ export function RemoveSessions(props: {
   ids: string[];
   label: string;
   onRemoved: () => void;
+  button?: boolean; // a real button instead of a red link
 }) {
   const { t } = useTranslation();
   const [phase, setPhase] = useState<Phase>('idle');
@@ -62,7 +63,7 @@ export function RemoveSessions(props: {
       {phase === 'idle' && (
         <button
           type="button"
-          className="link-btn danger"
+          className={props.button ? 'btn btn-small btn-danger-soft' : 'link-btn danger'}
           onClick={() => setPhase('confirm')}
         >
           {props.label}

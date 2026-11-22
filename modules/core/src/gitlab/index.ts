@@ -1,5 +1,7 @@
 export interface MergeRequest {
   iid: number;
+  /** Numeric project id: GitLab serves uploads under /-/project/<id>/uploads/. */
+  projectId?: number;
   title: string;
   author: string;
   sourceBranch: string;
@@ -12,6 +14,7 @@ export interface MergeRequest {
 
 interface GitlabMr {
   iid: number;
+  project_id?: number;
   title: string;
   author: { username: string };
   source_branch: string;
@@ -24,9 +27,10 @@ interface GitlabMr {
   work_in_progress?: boolean; // older name of draft
 }
 
-const API = 'https://gitlab.com/api/v4';
 import { PSDK_PROJECT } from '../constants';
+import { gitlabJson, projectPath } from './client';
 export { PSDK_PROJECT, TEST_LABEL } from '../constants';
+export { GitlabError } from './client';
 
 /** Open MRs without the Draft ones (not ready to be tested). */
 export function toMergeRequests(raw: GitlabMr[]): MergeRequest[] {
@@ -34,6 +38,7 @@ export function toMergeRequests(raw: GitlabMr[]): MergeRequest[] {
     .filter((mr) => !(mr.draft ?? mr.work_in_progress ?? false))
     .map((mr) => ({
       iid: mr.iid,
+      projectId: mr.project_id,
       title: mr.title,
       author: mr.author.username,
       sourceBranch: mr.source_branch,
@@ -45,36 +50,14 @@ export function toMergeRequests(raw: GitlabMr[]): MergeRequest[] {
     }));
 }
 
-/** HTTP error from the GitLab API; `retryAfterSec` is set on 429 (rate limit). */
-export class GitlabError extends Error {
-  constructor(
-    readonly status: number,
-    readonly retryAfterSec: number | null,
-  ) {
-    super(`GitLab API: HTTP ${status}`);
-    this.name = 'GitlabError';
-  }
-}
-
-/** Seconds to wait, from Retry-After or RateLimit-Reset (epoch seconds). */
-function retryAfter(headers: Headers, now = Date.now()): number | null {
-  const after = Number(headers.get('retry-after'));
-  if (after > 0) return after;
-  const reset = Number(headers.get('ratelimit-reset'));
-  if (reset > 0) return Math.max(1, Math.ceil(reset - now / 1000));
-  return null;
-}
-
 export async function listMergeRequests(
   project: string = PSDK_PROJECT,
   fetchFn: typeof fetch = fetch,
+  token?: string | null,
 ): Promise<MergeRequest[]> {
-  const url = `${API}/projects/${encodeURIComponent(project)}/merge_requests?state=opened&per_page=50`;
-  const res = await fetchFn(url);
-  if (!res.ok)
-    throw new GitlabError(
-      res.status,
-      res.status === 429 ? retryAfter(res.headers) : null,
-    );
-  return toMergeRequests((await res.json()) as GitlabMr[]);
+  const { data } = await gitlabJson<GitlabMr[]>(
+    `${projectPath(project)}/merge_requests?state=opened&per_page=50`,
+    { token, fetchFn },
+  );
+  return toMergeRequests(data);
 }

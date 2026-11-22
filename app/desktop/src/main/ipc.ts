@@ -6,10 +6,14 @@ import {
   prepareSession,
   removeSession,
 } from '@psdk-lab/core';
-import { BrowserWindow, ipcMain, type WebContents } from 'electron';
+import { app, BrowserWindow, ipcMain, type WebContents } from 'electron';
+import { release } from 'node:os';
 import { join } from 'node:path';
+import { auth, registerAuthIpc } from './auth';
+import { comment, discussions } from './discussions';
 import {
   IPC,
+  type CommentInput,
   type LaunchResult,
   type MrSelection,
   type RemoveResult,
@@ -22,16 +26,22 @@ const sender = (wc: WebContents) => (channel: string, payload: unknown) => {
 };
 
 /** Prepares (or reuses) the session of an MR, reporting each step to the renderer. */
-function prepare(
+async function prepare(
   send: ReturnType<typeof sender>,
   mr: MrSelection,
 ): Promise<SessionReport> {
-  return prepareSession({
+  const session = await prepareSession({
     rt: appRuntimes(),
     data: appData(),
     mr: { iid: mr.iid, sha: mr.sha },
     onUpdate: (update) => send(IPC.sessionStep, { mrIid: mr.iid, update }),
   });
+  // Update: the older sessions of this MR go once the new head is ready.
+  const old = (mr.replace ?? []).filter(
+    (id) => id !== session.id && id.startsWith(`mr-${mr.iid}-`),
+  );
+  for (const id of old) await remove(id).catch(() => 'kept');
+  return session;
 }
 
 const runningGames = new Set<string>();
@@ -70,7 +80,15 @@ async function remove(id: string): Promise<RemoveResult> {
 
 // The renderer never touches the network, the disk or a process: everything goes through here.
 export function registerIpc(): void {
-  const mrs = new MrCache(join(appData().cacheDir, 'merge-requests.json'));
+  registerAuthIpc();
+  // Signed in, the list is asked with the account (its own GitLab quota).
+  const mrs = new MrCache(
+    join(appData().cacheDir, 'merge-requests.json'),
+    undefined,
+    undefined,
+    undefined,
+    () => auth().accessToken().catch(() => null),
+  );
   ipcMain.handle(IPC.listMrs, (_event, force = false) => mrs.get(force));
   ipcMain.handle(IPC.checkRuntimes, async () => ({
     root: runtimesRoot(),
@@ -84,4 +102,16 @@ export function registerIpc(): void {
   );
   ipcMain.handle(IPC.listSessions, () => listSessions(appData()));
   ipcMain.handle(IPC.removeSession, (_event, id: string) => remove(id));
+  ipcMain.handle(IPC.listDiscussions, (_event, iid: number, force = false) =>
+    discussions(iid, force),
+  );
+  ipcMain.handle(IPC.comment, (_event, input: CommentInput) => comment(input));
+  ipcMain.handle(IPC.appInfo, () => ({
+    version: app.getVersion(),
+    platform: process.platform,
+    arch: process.arch,
+    osRelease: release(),
+    electron: process.versions.electron,
+    chrome: process.versions.chrome,
+  }));
 }

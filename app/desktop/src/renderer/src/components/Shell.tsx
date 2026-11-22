@@ -2,17 +2,9 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RuntimeReport } from '../../../shared/ipc';
 import { WorkshopIcon } from '../assets/WorkshopIcon';
-import { LanguageSelect } from '../LanguageSelect';
+import { SettingsDialog } from './SettingsDialog';
 import { TitleBar } from './TitleBar';
-
-const OS = /Windows/i.test(navigator.userAgent)
-  ? 'Windows'
-  : /Mac/i.test(navigator.userAgent)
-    ? 'macOS'
-    : 'Linux';
-
-/** Name of the tester's system, as shown in the header and the test report. */
-export const osName = () => OS;
+import { UserMenu } from './UserMenu';
 
 function Header() {
   const { t } = useTranslation();
@@ -24,9 +16,9 @@ function Header() {
         <div className="brand-name">{t('app.name')}</div>
       </div>
       <div className="header-right">
-        <LanguageSelect />
-        <span>{OS}</span>
+        <UserMenu />
       </div>
+      <SettingsDialog />
     </header>
   );
 }
@@ -98,7 +90,9 @@ export function Stepper({ current }: { current: 1 | 2 | 3 }) {
             className={`step ${state}`}
             aria-current={n === current ? 'step' : undefined}
           >
-            <span className="step-dot">{n}</span>
+            <span className="step-dot">
+              <span>{n}</span>
+            </span>
             {label}
           </li>
         );

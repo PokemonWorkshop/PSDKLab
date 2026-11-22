@@ -4,7 +4,7 @@ import type { MrSelection, SessionReport } from '../../../shared/ipc';
 
 export type WorkflowEvent =
   | { type: 'SELECT'; mr: MergeRequest }
-  | { type: 'PREPARE' }
+  | { type: 'PREPARE'; replace?: string[] } // replace: update of older sessions
   | { type: 'OPEN'; session: SessionReport } // a session already prepared
   | { type: 'BACK' }
   | { type: 'UPDATE'; update: StepUpdate };
@@ -19,6 +19,7 @@ export interface WorkflowContext {
   failedStep: SessionStep | null;
   session: SessionReport | null;
   error: string | null;
+  replace: string[]; // older sessions of the MR to remove once prepared
 }
 
 /** The main process error, without Electron's "Error invoking remote method" prefix. */
@@ -78,13 +79,18 @@ export const workflowMachine = setup({
     failedStep: null,
     session: null,
     error: null,
+    replace: [],
   },
   initial: 'selecting',
   states: {
     selecting: {
       on: {
         SELECT: { actions: assign({ mr: ({ event }) => event.mr }) },
-        PREPARE: { guard: 'hasMr', target: 'preparing' },
+        PREPARE: {
+          guard: 'hasMr',
+          target: 'preparing',
+          actions: assign({ replace: ({ event }) => event.replace ?? [] }),
+        },
         OPEN: {
           guard: 'hasMr',
           target: 'ready',
@@ -108,6 +114,7 @@ export const workflowMachine = setup({
         input: ({ context }) => ({
           iid: context.mr!.iid,
           sha: context.mr!.sha,
+          replace: context.replace,
         }),
         onDone: {
           target: 'ready',
@@ -136,7 +143,15 @@ export const workflowMachine = setup({
         },
       },
     },
-    ready: { on: { BACK: 'selecting' } },
+    ready: {
+      on: {
+        BACK: 'selecting',
+        PREPARE: {
+          target: 'preparing',
+          actions: assign({ replace: ({ event }) => event.replace ?? [] }),
+        },
+      },
+    },
     failed: { on: { PREPARE: 'preparing', BACK: 'selecting' } },
   },
 });

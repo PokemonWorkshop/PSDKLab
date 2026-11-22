@@ -11,3 +11,9 @@ export const TEST_LABEL = 'Need to be tested';
 export function sessionId(mrIid: number, sha: string): string {
   return `mr-${mrIid}-${sha.slice(0, 7)}`;
 }
+
+/** PSDK Lab OAuth application ID (not secret). Empty: token sign-in only. */
+export const GITLAB_CLIENT_ID = '';
+
+/** Callback registered on the OAuth application, listened to only while signing in. */
+export const GITLAB_REDIRECT_URI = 'http://127.0.0.1:41917/callback';
